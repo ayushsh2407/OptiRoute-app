@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OptiRoute — Smart Delivery Operations</title>
+
+<!-- Fonts: Orbitron for futuristic headers, Inter for clean UI, IBM Plex Mono for telemetry -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Icons & Map & Chart -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<style>
+  :root {
+    --bg-dark: #060913;
+    --bg-surface: #0a101f;
+    --panel-bg: rgba(13, 21, 39, 0.78);
+    --panel-alt: rgba(9, 15, 29, 0.85);
+    --panel-border: rgba(0, 243, 255, 0.18);
+    --panel-border-glow: rgba(0, 243, 255, 0.4);
+    
+    --neon-cyan: #00f3ff;
+    --neon-blue: #0099ff;
+    --neon-purple: #9b7ede;
+    --neon-violet: #7928ca;
+    --neon-amber: #f2b33d;
+    --neon-green: #00ff9d;
+    --neon-red: #ff3366;
+    
+    --text-primary: #f0f4fc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    
+    --font-heading: 'Orbitron', -apple-system, sans-serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  ::selection {
+    background: var(--neon-cyan);
+    color: #060913;
+  }
+
+  /* ---------- Background Canvas & Grid ---------- */
+  #bgCanvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.65;
+  }
+
+  .cyber-grid-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: 
+      linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .vignette-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.08) 0%, transparent 70%),
+                radial-gradient(circle at 100% 100%, rgba(121, 40, 202, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ---------- Top Navigation Bar ---------- */
+  .topbar {
+    position: relative;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 24px;
+    background: rgba(9, 15, 29, 0.88);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--panel-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  }
+
+  .brand-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-logo-hex {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(121, 40, 202, 0.25));
+    border: 1px solid var(--neon-cyan);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--neon-cyan);
+    font-size: 18px;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.35);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand-logo-hex::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(60deg, transparent, rgba(0, 243, 255, 0.25), transparent);
+    transform: rotate(45deg);
+    animation: shimmer 4s infinite linear;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand-name {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .neon-accent {
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.7);
+  }
+
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+  }
+
+  .topbar-center {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .badge-chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    background: rgba(13, 21, 39, 0.75);
+    border: 1px solid var(--panel-border);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .badge-chip.pulse-chip {
+    border-color: rgba(0, 255, 157, 0.4);
+    color: var(--neon-green);
+    background: rgba(0, 255, 157, 0.07);
+    box-shadow: 0 0 10px rgba(0, 255, 157, 0.15);
+  }
+
+  .pulse-dot-green {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+    animation: livePulse 1.8s infinite;
+  }
+
+  @keyframes livePulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.3); }
+  }
+
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-icon {
+    background: rgba(13, 21, 39, 0.8);
+    border: 1px solid var(--panel-border);
+    color: var(--neon-cyan);
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-family: var(--font-heading);
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .btn-icon:hover {
+    background: rgba(0, 243, 255, 0.12);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0, 243, 255, 0.3);
+    color: #ffffff;
+  }
+
+  /* ---------- App Layout ---------- */
+  .layout-grid {
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: 330px 1fr 390px;
+    gap: 12px;
+    padding: 12px;
+    height: calc(100vh - 61px);
+    overflow: hidden;
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .column::-webkit-scrollbar {
+    width: 5px;
+  }
+  .column::-webkit-scrollbar-track {
+    background: rgba(6, 9, 19, 0.5);
+  }
+  .column::-webkit-scrollbar-thumb {
+    background: rgba(0, 243, 255, 0.2);
+    border-radius: 3px;
+  }
+  .column::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-cyan);
+  }
+
+  /* ---------- Cyber Panels ---------- */
+  .cyber-panel {
+    background: var(--panel-bg);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 14px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .cyber-panel:hover {
+    border-color: rgba(0, 243, 255, 0.35);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+  }
+
+  .panel-title {
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title i {
+    color: var(--neon-cyan);
+    font-size: 12px;
+  }
+
+  .panel-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(0, 243, 255, 0.08);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    color: var(--neon-cyan);
+  }
+
+  /* ---------- Sliders and Inputs ---------- */
+  .field-box {
+    margin-bottom: 12px;
+  }
+
+  .field-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .field-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .field-val-badge {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--neon-cyan);
+    font-weight: 600;
+    background: rgba(0, 243, 255, 0.08);
+    border: 1px solid rgba(0, 243, 255, 0.25);
+    padding: 1px 7px;
+    border-radius: 4px;
+  }
+
+  input[type=range] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--neon-cyan);
+    cursor: pointer;
+    border: 2px solid #060913;
+    box-shadow: 0 0 10px var(--neon-cyan);
+    transition: transform 0.15s ease;
+  }
+
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.25);
+  }
+
+  /* ---------- Futuristic Buttons ---------- */
+  .cyber-btn {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cyber-btn:active {
+    transform: scale(0.98);
+  }
+
+  .cyber-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+  }
+
+  .btn-qpso-primary {
+    background: linear-gradient(135deg, #00f3ff, #0099ff);
+    color: #060913;
+    box-shadow: 0 0 18px rgba(0, 243, 255, 0.4);
+    margin-bottom: 8px;
+  }
+
+  .btn-qpso-primary:hover:not(:disabled) {
+    box-shadow: 0 0 25px rgba(0, 243, 255, 0.65);
+    filter: brightness(1.1);
+  }
+
+  .btn-cyber-secondary {
+    background: rgba(13, 21, 39, 0.9);
+    border: 1px solid var(--panel-border);
+    color: var(--text-primary);
+  }
+
+  .btn-cyber-secondary:hover:not(:disabled) {
+    background: rgba(0, 243, 255, 0.1);
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+  }
+
+  /* Status Indicator Line */
+  .status-telemetry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    background: rgba(6, 9, 19, 0.6);
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .radar-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .radar-dot.busy {
+    background: var(--neon-amber);
+    box-shadow: 0 0 10px var(--neon-amber);
+    animation: livePulse 0.8s infinite;
+  }
+
+  .radar-dot.done {
+    background: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green);
+  }
+
+  .radar-dot.error {
+    background: var(--neon-red);
+    box-shadow: 0 0 10px var(--neon-red);
+  }
+
+  /* ---------- Quantum Swarm State HUD ---------- */
+  .quantum-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .q-stat-card {
+    background: rgba(6, 9, 19, 0.6);
+    border: 1px solid rgba(0, 243, 255, 0.1);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+
+  .q-stat-label {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-bottom: 2px;
+  }
+
+  .q-stat-val {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    color: var(--neon-purple);
+    font-weight: 700;
+  }
+
+  /* ---------- Congestion Zones ---------- */
+  .zone-item {
+    margin-bottom: 10px;
+  }
+
+  .zone-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 5px;
+  }
+
+  .zone-name {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .zone-pct {
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .zone-track {
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+
+  .zone-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+
+  /* ---------- Center Column: Map Matrix ---------- */
+  .center-column {
+    display: flex;
+    flex-direction: column;
+    padding-right: 0;
+  }
+
+  .map-container-card {
+    flex: 1;
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    background: #000000;
+  }
+
+  #map {
+    width: 100%;
+    height: 100%;
+    background: #060913;
+  }
+
+  /* Futuristic Map HUD Overlay */
+  .map-hud-top {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hud-badge {
+    background: rgba(6, 9, 19, 0.88);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .hud-badge strong {
+    color: var(--neon-cyan);
+  }
+
+  .map-hud-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 500;
+    display: flex;
+    gap: 6px;
+  }
+
+  .map-ctrl-btn {
+    background: rgba(6, 9, 19, 0.88);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--panel-border);
+    color: var(--neon-cyan);
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .map-ctrl-btn:hover {
+    background: rgba(0, 243, 255, 0.2);
+    border-color: var(--neon-cyan);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+  }
+
+  .map-hud-bottom {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    z-index: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .map-hud-pill {
+    pointer-events: auto;
+    background: rgba(6, 9, 19, 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .map-hud-pill span {
+    color: var(--text-primary);
+  }
+
+  /* Scanning laser line */
+  .scanning-laser {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+    box-shadow: 0 0 15px var(--neon-cyan);
+    z-index: 550;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .scanning-laser.active {
+    opacity: 1;
+    animation: scanLaser 2.2s infinite ease-in-out;
+  }
+
+  @keyframes scanLaser {
+    0% { top: 0%; opacity: 0.8; }
+    50% { top: 100%; opacity: 1; }
+    100% { top: 0%; opacity: 0.8; }
+  }
+
+  /* ---------- Right Column: Analytics & Route Matrix ---------- */
+  .stat-grid-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .stat-card-hud {
+    background: rgba(6, 9, 19, 0.7);
+    border: 1px solid rgba(0, 243, 255, 0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card-hud::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--panel-border);
+  }
+
+  .stat-card-hud.win::before {
+    background: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+  }
+
+  .stat-card-hud.cyan::before {
+    background: var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+  }
+
+  .stat-card-hud.amber::before {
+    background: var(--neon-amber);
+    box-shadow: 0 0 8px var(--neon-amber);
+  }
+
+  .stat-card-hud.purple::before {
+    background: var(--neon-purple);
+    box-shadow: 0 0 8px var(--neon-purple);
+  }
+
+  .stat-val-big {
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 2px;
+  }
+
+  .stat-card-hud.win .stat-val-big {
+    color: var(--neon-green);
+    text-shadow: 0 0 8px rgba(0, 255, 157, 0.4);
+  }
+
+  .stat-card-hud.cyan .stat-val-big {
+    color: var(--neon-cyan);
+  }
+
+  .stat-lbl-sub {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    font-family: var(--font-body);
+  }
+
+  /* Table styling */
+  .route-table-wrap {
+    max-height: 230px;
+    overflow-y: auto;
+  }
+
+  .cyber-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11.5px;
+  }
+
+  .cyber-table th {
+    text-align: left;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    padding: 7px 6px;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+  }
+
+  .cyber-table td {
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+  }
+
+  .veh-swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
+    box-shadow: 0 0 6px currentColor;
+  }
+
+  .cap-bar-track {
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    width: 65px;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+
+  .cap-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  /* ---------- ARIA Floating AI Assistant Widget ---------- */
+  .aria-floating-badge {
+    position: fixed;
+    bottom: 20px;
+    right: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px 8px 10px;
+    background: rgba(13, 21, 39, 0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.35);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  .aria-floating-badge:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+  }
+
+  .aria-avatar-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #060913;
+    font-size: 15px;
+    position: relative;
+  }
+
+  .aria-pulse-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid var(--neon-cyan);
+    animation: ariaPulse 2s infinite;
+  }
+
+  @keyframes ariaPulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.7); opacity: 0; }
+  }
+
+  .aria-text-label {
+    font-family: var(--font-heading);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+  }
+
+  /* ARIA Chat Panel */
+  .aria-panel-popup {
+    position: fixed;
+    bottom: 74px;
+    right: 24px;
+    width: 360px;
+    max-height: 480px;
+    background: rgba(9, 15, 29, 0.96);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--neon-cyan);
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 243, 255, 0.25);
+    z-index: 1001;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    animation: slideUp 0.25s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .aria-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(0, 243, 255, 0.08);
+    border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+  }
+
+  .aria-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .aria-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .aria-close-btn:hover { color: var(--neon-cyan); }
+
+  .aria-wave-visualizer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 24px;
+    padding: 4px 0;
+    background: rgba(6, 9, 19, 0.5);
+  }
+
+  .wave-bar {
+    width: 3px;
+    height: 6px;
+    border-radius: 2px;
+    background: var(--neon-cyan);
+    animation: soundWave 1.2s infinite ease-in-out;
+  }
+
+  .wave-bar:nth-child(2) { animation-delay: 0.2s; }
+  .wave-bar:nth-child(3) { animation-delay: 0.4s; }
+  .wave-bar:nth-child(4) { animation-delay: 0.1s; }
+  .wave-bar:nth-child(5) { animation-delay: 0.3s; }
+
+  @keyframes soundWave {
+    0%, 100% { height: 4px; opacity: 0.3; }
+    50% { height: 18px; opacity: 1; }
+  }
+
+  .aria-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 250px;
+    font-size: 12px;
+  }
+
+  .aria-msg {
+    padding: 8px 12px;
+    border-radius: 8px;
+    line-height: 1.4;
+  }
+
+  .aria-msg.bot {
+    background: rgba(13, 21, 39, 0.85);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    color: var(--text-primary);
+    align-self: flex-start;
+  }
+
+  .aria-msg.user {
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.2), rgba(0, 153, 255, 0.2));
+    border: 1px solid rgba(0, 243, 255, 0.4);
+    color: #ffffff;
+    align-self: flex-end;
+  }
+
+  .aria-quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(6, 9, 19, 0.7);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .chip-btn {
+    background: rgba(13, 21, 39, 0.8);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .chip-btn:hover {
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    background: rgba(0, 243, 255, 0.1);
+  }
+
+  .aria-input-box {
+    display: flex;
+    padding: 10px 12px;
+    background: rgba(9, 15, 29, 0.95);
+    border-top: 1px solid rgba(0, 243, 255, 0.2);
+    gap: 8px;
+  }
+
+  .aria-input {
+    flex: 1;
+    background: rgba(6, 9, 19, 0.8);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    border-radius: 6px;
+    padding: 7px 10px;
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 12px;
+    outline: none;
+  }
+
+  .aria-input:focus {
+    border-color: var(--neon-cyan);
+  }
+
+  .aria-send-btn {
+    background: var(--neon-cyan);
+    color: #060913;
+    border: none;
+    border-radius: 6px;
+    width: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ---------- Modal (Formulation / Math) ---------- */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-width: 640px;
+    background: var(--bg-surface);
+    border: 1px solid var(--neon-cyan);
+    box-shadow: 0 0 35px rgba(0, 243, 255, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+    animation: modalPop 0.25s ease-out;
+  }
+
+  @keyframes modalPop {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+    background: rgba(0, 243, 255, 0.05);
+  }
+
+  .modal-top h3 {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .modal-content-body {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-primary);
+  }
+
+  .math-block {
+    background: rgba(6, 9, 19, 0.85);
+    border-left: 3px solid var(--neon-cyan);
+    padding: 12px 14px;
+    border-radius: 0 6px 6px 0;
+    margin: 10px 0;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--neon-cyan);
+  }
+
+  /* Custom Leaflet Map styling */
+  .leaflet-container {
+    background: #060913 !important;
+  }
+  .leaflet-control-zoom a {
+    background: rgba(9, 15, 29, 0.9) !important;
+    color: var(--neon-cyan) !important;
+    border-color: rgba(0, 243, 255, 0.3) !important;
+  }
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+    background: rgba(9, 15, 29, 0.95) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--neon-cyan) !important;
+    backdrop-filter: blur(8px);
+  }
+  /* CLEAN LOGISTICS REDESIGN — preserves the existing dashboard behaviour */
+  :root {
+    --bg-dark:#f5f7fb; --bg-surface:#ffffff; --panel-bg:#ffffff; --panel-alt:#fbfcff;
+    --panel-border:#e4eaf3; --panel-border-glow:#c9d7ee;
+    --neon-cyan:#2267d8; --neon-blue:#3985f7; --neon-purple:#7158d9;
+    --neon-violet:#7158d9; --neon-amber:#e99422; --neon-green:#1a9b68; --neon-red:#d94d5c;
+    --text-primary:#17233a; --text-secondary:#63718a; --text-muted:#8b97aa;
+    --font-heading:'Inter',-apple-system,sans-serif; --font-body:'Inter',-apple-system,sans-serif;
+  }
+  body{background:#f5f7fb;color:var(--text-primary);}
+  #bgCanvas,.cyber-grid-overlay,.vignette-glow,.scanning-laser{display:none!important;}
+  .topbar{height:74px;padding:0 30px;background:rgba(255,255,255,.94);border-bottom:1px solid #e6ebf2;box-shadow:0 1px 10px rgba(31,50,84,.04);}
+  .brand-logo-hex{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#2d75df,#1554bc);clip-path:none;box-shadow:0 8px 16px rgba(34,103,216,.22);}
+  .brand-logo-hex::before{display:none;}.brand-logo-hex i{font-size:18px;color:white;}
+  .brand-name{font-size:19px;letter-spacing:-.6px;color:#17233a;text-shadow:none;}.neon-accent{color:#2267d8;text-shadow:none;}
+  .brand-sub{font-family:var(--font-body);font-size:10px;letter-spacing:.08em;color:#8895a8;}
+  .badge-chip{border:1px solid #e3e9f2;background:#f8faff;color:#64718a;border-radius:999px;box-shadow:none;font-family:var(--font-body);font-size:10.5px;}
+  .badge-chip i{color:#2267d8;}.pulse-chip{border-color:#cae9dc;background:#f2fbf7;color:#217755;}.pulse-dot-green{box-shadow:none;}
+  .btn-icon{font-family:var(--font-body);border:1px solid #e3e9f2;background:#fff;color:#52627b;border-radius:9px;box-shadow:none;}.btn-icon:hover{color:#2267d8;border-color:#b8ccea;background:#f7faff;}
+  .layout-grid{height:calc(100vh - 74px);padding:18px 22px;gap:18px;grid-template-columns:285px minmax(520px,1fr) 335px;background:#f5f7fb;}
+  .column{gap:16px;}.cyber-panel{border:1px solid #e3e9f2;border-radius:15px;background:#fff;box-shadow:0 3px 14px rgba(31,50,84,.045);padding:16px;}
+  .cyber-panel::before,.cyber-panel::after{display:none;}.panel-header{border-bottom:1px solid #edf0f5;padding-bottom:12px;margin-bottom:15px;}
+  .panel-title{font-family:var(--font-body);font-size:12.5px;letter-spacing:0;color:#263650;}.panel-title i{color:#2267d8;}
+  .panel-tag{background:#eff5ff;border:0;border-radius:999px;color:#5380c3;font-family:var(--font-body);font-size:9px;padding:4px 8px;}
+  .field-box{background:#fbfcfe;border:1px solid #edf0f5;border-radius:10px;padding:11px 12px;}.field-label{font-size:11px;color:#66748b;}.field-val-badge{background:#eaf1ff;color:#2267d8;border:0;border-radius:7px;}
+  input[type=range]{background:linear-gradient(90deg,#2d75df,#dbe7fb);}input[type=range]::-webkit-slider-thumb{background:#fff;border:3px solid #2d75df;box-shadow:0 2px 5px rgba(34,103,216,.25);}
+  .cyber-btn{font-family:var(--font-body);border-radius:10px;letter-spacing:0;font-size:11.5px;box-shadow:none;}.btn-qpso-primary{background:#2267d8;color:white;border:1px solid #2267d8;box-shadow:0 7px 14px rgba(34,103,216,.17);}.btn-qpso-primary:hover{background:#185abf;}.btn-cyber-secondary{background:white;color:#52627b;border:1px solid #dce4f0;}.btn-cyber-secondary:hover{border-color:#8aafe7;background:#f6f9ff;color:#2267d8;}
+  .status-telemetry{background:#f7f9fc;border:1px solid #edf0f5;border-radius:9px;color:#718097;font-family:var(--font-body);}.radar-dot{box-shadow:none;background:#1a9b68;}.radar-dot::after{border-color:#1a9b68;}
+  .quantum-stats-row{gap:8px;}.q-stat-card{background:#f8faff;border:1px solid #e8edf5;border-radius:9px;}.q-stat-label{font-family:var(--font-body);font-size:8px;color:#8996a9;}.q-stat-val{font-family:var(--font-body);font-size:12px;color:#273957;}
+  .zone-row{border-bottom:1px solid #edf0f5;}.zone-name{font-family:var(--font-body);color:#465875;}.zone-bar-track{background:#edf1f6;}.zone-pct{font-family:var(--font-body);color:#63718a;}
+  .center-column{min-width:0;}.map-container-card{border:1px solid #dfe6ef;border-radius:18px;box-shadow:0 10px 30px rgba(31,50,84,.09);background:white;overflow:hidden;}
+  #map{filter:saturate(.88) contrast(.98) brightness(1.02);}.map-hud-top{top:16px;left:16px;gap:8px;}.hud-badge,.map-hud-pill{border:1px solid #e2e8f1;background:rgba(255,255,255,.94);box-shadow:0 3px 10px rgba(31,50,84,.1);backdrop-filter:blur(8px);color:#617089;font-family:var(--font-body);}.hud-badge i{color:#2267d8;}.hud-badge strong{color:#263650;}
+  .map-hud-controls{top:16px;right:16px;}.map-ctrl-btn{background:rgba(255,255,255,.95);border:1px solid #e2e8f1;color:#50627c;box-shadow:0 2px 8px rgba(31,50,84,.08);}.map-ctrl-btn:hover{color:#2267d8;border-color:#a9c3e9;}.map-hud-bottom{bottom:15px;left:16px;}.map-hud-pill{font-size:10px;}
+  .stat-grid-4{gap:8px;}.stat-card-hud{background:#f9fbfe;border:1px solid #e8edf5;border-radius:10px;padding:11px;box-shadow:none;}.stat-card-hud::before{display:none;}.stat-card-hud.cyan{border-top:3px solid #3985f7;}.stat-card-hud.amber{border-top:3px solid #e99422;}.stat-card-hud.win{border-top:3px solid #1a9b68;}.stat-card-hud.purple{border-top:3px solid #7158d9;}.stat-val-big{font-family:var(--font-body);font-size:17px;color:#253650;text-shadow:none;}.stat-lbl-sub{font-family:var(--font-body);font-size:8.5px;color:#8390a3;}
+  .route-table-wrap{border:1px solid #edf0f5;border-radius:10px;}.cyber-table th{background:#f8faff;border-color:#e8edf5;color:#7b889d;font-family:var(--font-body);font-size:9px;}.cyber-table td{border-color:#edf0f5;color:#465875;font-family:var(--font-body);font-size:10.5px;}.route-vehicle-chip{box-shadow:none;}
+  .aria-floating-badge,.aria-panel-popup{display:none!important;}.leaflet-control-zoom a{background:#fff!important;color:#52627b!important;border-color:#e2e8f1!important;}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#fff!important;color:#263650!important;border:1px solid #e2e8f1!important;box-shadow:0 5px 18px rgba(31,50,84,.12);}
+  /* MAP-FIRST WORKSPACE — replaces the fixed three-column dashboard */
+  .layout-grid{display:block;position:relative;height:calc(100vh - 74px);padding:18px 22px;overflow:hidden;}
+  .center-column{position:absolute;inset:18px 22px;z-index:1;display:block;}
+  .center-column .map-container-card{height:100%;}
+  .layout-grid > .column:first-child{position:absolute;z-index:5;left:38px;top:36px;bottom:36px;width:292px;display:flex;overflow-y:auto;padding:0 2px 0 0;scrollbar-width:thin;}
+  .layout-grid > .column:last-child{position:absolute;z-index:6;left:360px;right:40px;bottom:38px;display:grid;grid-template-columns:270px 310px minmax(360px,1fr);gap:12px;align-items:stretch;max-height:260px;}
+  .layout-grid > .column:last-child .cyber-panel{margin:0;min-height:0;overflow:auto;}
+  .layout-grid > .column:last-child .cyber-panel:first-child{padding-bottom:10px;}
+  .layout-grid > .column:last-child .cyber-panel:last-child{display:flex!important;}
+  .layout-grid > .column:last-child .panel-header{margin-bottom:10px;padding-bottom:9px;}
+  .layout-grid > .column:last-child .stat-grid-4{grid-template-columns:1fr 1fr;}
+  .layout-grid > .column:last-child .stat-card-hud{padding:8px;}
+  .layout-grid > .column:last-child .stat-val-big{font-size:16px;}
+  .layout-grid > .column:last-child .route-table-wrap{max-height:170px;overflow:auto;}
+  @media(max-width:1100px){.layout-grid > .column:first-child{left:28px;width:250px;}.layout-grid > .column:last-child{left:300px;right:28px;grid-template-columns:250px 280px minmax(280px,1fr);}.topbar{padding:0 16px;}.topbar-center{gap:5px;}.badge-chip:nth-child(2){display:none;}}
+  /* SCROLLING PAGE LAYOUT — map workspace followed by detailed results */
+  body{overflow-x:hidden;overflow-y:auto;}
+  .layout-grid{display:grid;grid-template-columns:292px minmax(0,1fr);grid-template-rows:auto auto;gap:22px;height:auto;min-height:calc(100vh - 74px);padding:22px;overflow:visible;}
+  .layout-grid > .column:first-child{position:static;grid-column:1;grid-row:1;width:auto;display:flex;overflow:visible;padding:0;}
+  .center-column{position:static;inset:auto;grid-column:2;grid-row:1;display:block;min-height:620px;}
+  .center-column .map-container-card{height:clamp(620px,78vh,860px);}
+  .layout-grid > .column:last-child{position:static;grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:minmax(260px,.85fr) minmax(300px,1fr) minmax(420px,1.5fr);gap:18px;align-items:stretch;max-height:none;}
+  .layout-grid > .column:last-child .cyber-panel{margin:0;min-height:260px;overflow:visible;}
+  .layout-grid > .column:last-child .cyber-panel:last-child{display:flex!important;}
+  .layout-grid > .column:last-child .route-table-wrap{max-height:260px;overflow:auto;}
+  @media(max-width:900px){.layout-grid{grid-template-columns:1fr;padding:14px;}.layout-grid > .column:first-child,.center-column{grid-column:1;}.layout-grid > .column:first-child{grid-row:1;}.center-column{grid-row:2;min-height:520px;}.center-column .map-container-card{height:620px;}.layout-grid > .column:last-child{grid-column:1;grid-row:3;grid-template-columns:1fr;}.topbar-center{display:none;}}
+  /* DARK THEME */
+  :root{--bg-dark:#08111f;--bg-surface:#0d192a;--panel-bg:#101d30;--panel-alt:#0b1627;--panel-border:#243653;--panel-border-glow:#355b8e;--text-primary:#eaf1fb;--text-secondary:#a3b2c8;--text-muted:#70819b;--neon-cyan:#62a8ff;--neon-blue:#408cff;--neon-purple:#ab91ff;--neon-amber:#f6b74c;--neon-green:#56d6a0;--neon-red:#ff7182;}
+  body,.layout-grid{background:#08111f;color:var(--text-primary);}
+  .topbar{background:rgba(8,17,31,.94);border-color:#1c2d47;box-shadow:0 1px 14px rgba(0,0,0,.3);}
+  .brand-name{color:#f3f7ff;}.brand-sub{color:#8292a9;}.brand-logo-hex{background:linear-gradient(135deg,#458ff5,#265eb8);}
+  .badge-chip{background:#101d30;border-color:#283b59;color:#a9b8ce;}.pulse-chip{background:#102b27;border-color:#245c50;color:#72dcb2;}
+  .btn-icon{background:#101d30;border-color:#2a3e5d;color:#aab9ce;}.btn-icon:hover{background:#172943;border-color:#4e7fbb;color:#81b7ff;}
+  .cyber-panel{background:linear-gradient(145deg,#101d30,#0c1728);border-color:#233651;box-shadow:0 8px 22px rgba(0,0,0,.2);}
+  .panel-header{border-color:#22344e;}.panel-title{color:#e5edf9;}.panel-tag{background:#182b48;color:#9bc4ff;}
+  .field-box,.status-telemetry{background:#0b1627;border-color:#22344e;}.field-label,.status-telemetry{color:#a4b3c8;}.field-val-badge{background:#17345b;color:#91c1ff;}
+  input[type=range]{background:linear-gradient(90deg,#4b90ef,#253b58);}input[type=range]::-webkit-slider-thumb{background:#101d30;border-color:#62a8ff;}
+  .btn-cyber-secondary{background:#142238;border-color:#2b4161;color:#c1cde0;}.btn-cyber-secondary:hover{background:#1a2e4c;border-color:#5c92d2;color:#b9d8ff;}
+  .q-stat-card,.stat-card-hud{background:#0d192a;border-color:#233651;}.q-stat-label,.stat-lbl-sub{color:#8191a7;}.q-stat-val,.stat-val-big{color:#edf4ff;}
+  .zone-row{border-color:#20334d;}.zone-name,.zone-pct{color:#bdc9da;}.zone-bar-track{background:#233650;}
+  .map-container-card{border-color:#2a405f;background:#0b1627;box-shadow:0 14px 35px rgba(0,0,0,.32);}
+  #map{filter:brightness(.72) saturate(.76) contrast(1.08) hue-rotate(178deg);}.hud-badge,.map-hud-pill{background:rgba(12,23,40,.9);border-color:#2a405f;color:#b3c3d9;box-shadow:0 4px 12px rgba(0,0,0,.28);}.hud-badge strong{color:#eef5ff;}
+  .map-ctrl-btn{background:#101d30;border-color:#2a405f;color:#b4c4d9;}.map-ctrl-btn:hover{background:#182c49;color:#91c1ff;}
+  .route-table-wrap{border-color:#233651;}.cyber-table th{background:#0c1728;border-color:#233651;color:#8fa0b8;}.cyber-table td{border-color:#1e304a;color:#c2cede;}
+  .leaflet-control-zoom a{background:#101d30!important;color:#b9d4f8!important;border-color:#2b4161!important;}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#101d30!important;color:#eaf1fb!important;border-color:#2b4161!important;}
+  /* LIVE ROUTE LEGEND */
+  .route-legend-card{margin-top:22px;padding:22px 24px;border:1px solid #233651;border-radius:16px;background:linear-gradient(145deg,#101d30,#0c1728);box-shadow:0 8px 22px rgba(0,0,0,.18);}
+  .legend-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:19px;}.legend-eyebrow{display:block;margin-bottom:5px;color:#76adf7;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}.legend-heading h2{margin:0;color:#edf4ff;font-family:var(--font-body);font-size:17px;letter-spacing:-.3px;}.legend-live{display:flex;align-items:center;gap:7px;color:#a7b8ce;font-size:11px;white-space:nowrap;}.legend-live span{width:8px;height:8px;border-radius:50%;background:#56d6a0;box-shadow:0 0 0 4px rgba(86,214,160,.1);}
+  .legend-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;}.legend-item{display:flex;gap:11px;min-width:0;padding:13px;border:1px solid #21344f;border-radius:12px;background:rgba(4,11,22,.28);}.legend-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;font-size:13px;}.depot-icon{background:rgba(246,183,76,.13);color:#f6b74c;}.stop-icon{background:rgba(98,168,255,.13);color:#62a8ff;}.route-icon{background:rgba(171,145,255,.13);color:#ab91ff;}.graph-icon{background:rgba(86,214,160,.13);color:#56d6a0;}.legend-item strong{display:block;color:#e4edf9;font-size:11.5px;margin:1px 0 5px;}.legend-item p{margin:0;color:#8ea0b9;font-size:10px;line-height:1.45;}
+  @media(max-width:900px){.legend-grid{grid-template-columns:1fr 1fr;}.route-legend-card{padding:18px;}}
+  @media(max-width:560px){.legend-heading{align-items:flex-start;flex-direction:column;gap:8px;}.legend-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- Interactive Animated Cyber Background Canvas -->
+<canvas id="bgCanvas"></canvas>
+<div class="cyber-grid-overlay"></div>
+<div class="vignette-glow"></div>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="brand-group">
+    <div class="brand-logo-hex">
+      <i class="fas fa-atom"></i>
+    </div>
+    <div class="brand-text">
+      <div class="brand-name">Opti<span class="neon-accent">Route</span></div>
+      <div class="brand-sub">SMART DELIVERY OPERATIONS</div>
+    </div>
+  </div>
+
+  <div class="topbar-center">
+    <div class="badge-chip">
+      <i class="fas fa-microchip"></i> PS 26137
+    </div>
+    <div class="badge-chip">
+      <i class="fas fa-route"></i> Delhi delivery network
+    </div>
+    <div class="badge-chip pulse-chip" id="solverModeBadge">
+      <div class="pulse-dot-green"></div>
+      <span id="backendStatusText">SYSTEM ONLINE</span>
+    </div>
+    <div class="badge-chip" id="clockBadge">
+      <i class="far fa-clock"></i> 00:00:00 UTC
+    </div>
+  </div>
+
+  <div class="topbar-actions">
+    <button class="btn-icon" id="formulationBtn" title="View Mathematical Formulation">
+      <i class="fas fa-square-root-variable"></i> Math Model
+    </button>
+    <button class="btn-icon" id="soundToggleBtn" title="Toggle UI Audio Feedback">
+      <i class="fas fa-volume-high" id="soundIcon"></i>
+    </button>
+  </div>
+</header>
+
+<!-- Main Grid Layout -->
+<main class="layout-grid">
+
+  <!-- LEFT: Problem Controls & Quantum Telemetry -->
+  <section class="column">
+    
+    <!-- Problem Instance -->
+    <div class="cyber-panel">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-map-location-dot"></i> Delivery scenario</span>
+        <span class="panel-tag">Delhi Metro</span>
+      </div>
+
+      <div class="field-box">
+        <div class="field-label-row">
+          <span class="field-label">Delivery Stops (Customers)</span>
+          <span class="field-val-badge" id="custVal">14</span>
+        </div>
+        <input type="range" id="custSlider" min="8" max="28" value="14">
+      </div>
+
+      <div class="field-box">
+        <div class="field-label-row">
+          <span class="field-label">Vehicle Capacity (Units)</span>
+          <span class="field-val-badge" id="capVal">32</span>
+        </div>
+        <input type="range" id="capSlider" min="20" max="48" value="32">
+      </div>
+
+      <button class="cyber-btn btn-cyber-secondary" id="genBtn">
+        <i class="fas fa-rotate"></i> Generate new delivery set
+      </button>
+    </div>
+
+    <!-- Optimization Controls -->
+    <div class="cyber-panel">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-bolt"></i> Route optimisation</span>
+        <span class="panel-tag">QPSO</span>
+      </div>
+
+      <button class="cyber-btn btn-qpso-primary" id="runBtn">
+        <i class="fas fa-play"></i> Optimise delivery routes
+      </button>
+      <button class="cyber-btn btn-cyber-secondary" id="compareBtn">
+        <i class="fas fa-scale-balanced"></i> Compare route strategies
+      </button>
+
+      <div class="status-telemetry">
+        <div class="radar-dot" id="statusDot"></div>
+        <span id="statusText">Ready to optimise deliveries</span>
+      </div>
+    </div>
+
+    <!-- Quantum Telemetry -->
+    <div class="cyber-panel">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-gauge-high"></i> Optimiser settings</span>
+        <span class="panel-tag">Live</span>
+      </div>
+
+      <div class="quantum-stats-row">
+        <div class="q-stat-card">
+          <div class="q-stat-label">COHERENCE RATE</div>
+          <div class="q-stat-val" id="teleCoherence">98.4%</div>
+        </div>
+        <div class="q-stat-card">
+          <div class="q-stat-label">EXPANSION β</div>
+          <div class="q-stat-val" id="teleBeta">1.00 → 0.50</div>
+        </div>
+        <div class="q-stat-card">
+          <div class="q-stat-label">SWARM PARTICLES</div>
+          <div class="q-stat-val">24 Units</div>
+        </div>
+        <div class="q-stat-card">
+          <div class="q-stat-label">SEARCH SPACE</div>
+          <div class="q-stat-val">2<sup>64</sup> States</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic Congestion Hotspots -->
+    <div class="cyber-panel">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-traffic-light"></i> Traffic conditions</span>
+        <span class="panel-tag" id="liveTag">LIVE SNAP</span>
+      </div>
+
+      <div id="zoneContainer"></div>
+
+      <div style="font-size: 10.5px; color: var(--text-muted); line-height: 1.4; margin-top: 8px;">
+        <i class="fas fa-circle-info"></i> Road costs weighted dynamically by simulated traffic hotspots: \(c_{ij} = d_{ij}(1 + \gamma w_{ij})\).
+      </div>
+    </div>
+
+  </section>
+
+  <!-- CENTER: Tactical Geospatial Matrix -->
+  <section class="column center-column">
+    <div class="map-container-card">
+      <div class="scanning-laser" id="scanningLaser"></div>
+      
+      <div class="map-hud-top">
+        <div class="hud-badge">
+          <i class="fas fa-warehouse"></i> Central Depot: <strong>Connaught Place</strong>
+        </div>
+        <div class="hud-badge" id="hudActiveStops">
+          Stops: <strong>14</strong>
+        </div>
+      </div>
+
+      <div class="map-hud-controls">
+        <button class="map-ctrl-btn" id="centerMapBtn" title="Center Depot"><i class="fas fa-crosshairs"></i></button>
+        <button class="map-ctrl-btn" id="toggleLaserBtn" title="Toggle Radar Laser"><i class="fas fa-radar"></i></button>
+        <button class="map-ctrl-btn" id="fullscreenBtn" title="Toggle Fullscreen"><i class="fas fa-expand"></i></button>
+      </div>
+
+      <div id="map"></div>
+
+      <div class="map-hud-bottom">
+        <div class="map-hud-pill">
+          Coordinates: <span id="mapCoords">28.6315° N, 77.2167° E</span>
+        </div>
+        <div class="map-hud-pill">
+          Tiles: <span>CARTO DarkMatter & OpenStreetMap</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live route legend: gives operators and judges context for the map. -->
+    <section class="route-legend-card" aria-label="Live route legend">
+      <div class="legend-heading">
+        <div>
+          <span class="legend-eyebrow">Route guide</span>
+          <h2>How to read this delivery plan</h2>
+        </div>
+        <span class="legend-live"><span></span> Live scenario</span>
+      </div>
+      <div class="legend-grid">
+        <article class="legend-item">
+          <div class="legend-icon depot-icon"><i class="fas fa-warehouse"></i></div>
+          <div><strong>Central depot</strong><p>Every vehicle begins and ends at Connaught Place.</p></div>
+        </article>
+        <article class="legend-item">
+          <div class="legend-icon stop-icon"><i class="fas fa-location-dot"></i></div>
+          <div><strong>Delivery stops</strong><p>Numbered markers are customer locations and delivery demands.</p></div>
+        </article>
+        <article class="legend-item">
+          <div class="legend-icon route-icon"><i class="fas fa-route"></i></div>
+          <div><strong>Vehicle routes</strong><p>Each color is one vehicle; the line shows its stop sequence.</p></div>
+        </article>
+        <article class="legend-item">
+          <div class="legend-icon graph-icon"><i class="fas fa-diagram-project"></i></div>
+          <div><strong>Route cost</strong><p>Costs use Dijkstra shortest paths on a traffic-weighted road graph.</p></div>
+        </article>
+      </div>
+    </section>
+  </section>
+
+  <!-- RIGHT: Convergence Analytics & Route Table -->
+  <section class="column">
+    
+    <!-- Convergence Chart -->
+    <div class="cyber-panel">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-chart-line"></i> Optimisation progress</span>
+        <span class="panel-tag">Route cost</span>
+      </div>
+      <div style="height: 175px; position: relative;">
+        <canvas id="convChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Telemetry HUD Cards -->
+    <div class="cyber-panel">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-tachometer-alt"></i> Delivery summary</span>
+        <span class="panel-tag">Results</span>
+      </div>
+
+      <div class="stat-grid-4">
+        <div class="stat-card-hud cyan">
+          <div class="stat-val-big" id="statDist">—</div>
+          <div class="stat-lbl-sub">Total Distance (km)</div>
+        </div>
+        <div class="stat-card-hud amber">
+          <div class="stat-val-big" id="statVeh">—</div>
+          <div class="stat-lbl-sub">Fleet Vehicles</div>
+        </div>
+        <div class="stat-card-hud win">
+          <div class="stat-val-big" id="statImprove">—</div>
+          <div class="stat-lbl-sub">vs Greedy Baseline</div>
+        </div>
+        <div class="stat-card-hud purple">
+          <div class="stat-val-big" id="statGap">—</div>
+          <div class="stat-lbl-sub">QPSO vs Classical PSO</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Route Assignment Matrix -->
+    <div class="cyber-panel" style="flex: 1; display: flex; flex-direction: column;">
+      <div class="panel-header">
+        <span class="panel-title"><i class="fas fa-truck-fast"></i> Vehicle assignments</span>
+        <span class="panel-tag" id="dispatchCount">0 Routes</span>
+      </div>
+
+      <div class="route-table-wrap">
+        <table class="cyber-table" id="routeTable">
+          <thead>
+            <tr>
+              <th>Vehicle</th>
+              <th>Customer Sequence</th>
+              <th>Load / Cap</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 24px 8px;">
+                Execute the optimizer to generate vehicle route assignments.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<!-- Floating ARIA AI Assistant -->
+<div class="aria-floating-badge" id="ariaToggleBtn" title="Ask ARIA AI Assistant">
+  <div class="aria-avatar-icon">
+    <div class="aria-pulse-ring"></div>
+    <i class="fas fa-robot"></i>
+  </div>
+  <span class="aria-text-label">ARIA Q-AI</span>
+</div>
+
+<!-- ARIA Assistant Popup Deck -->
+<div class="aria-panel-popup" id="ariaPanel">
+  <div class="aria-header">
+    <div class="aria-title">
+      <i class="fas fa-brain neon-accent"></i> ARIA Neural Intelligence
+    </div>
+    <button class="aria-close-btn" id="ariaCloseBtn">&times;</button>
+  </div>
+  <div class="aria-wave-visualizer">
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+    <div class="wave-bar"></div>
+  </div>
+  <div class="aria-messages" id="ariaMessages">
+    <div class="aria-msg bot">
+      Systems nominal. I am <strong>ARIA</strong>, your Quantum Route Intelligence copilot. How can I assist your route optimization today?
+    </div>
+  </div>
+  <div class="aria-quick-chips">
+    <button class="chip-btn" data-act="optimize">⚡ Run QPSO</button>
+    <button class="chip-btn" data-act="benchmark">📊 Benchmark</button>
+    <button class="chip-btn" data-act="rescan">🎲 New City Scan</button>
+    <button class="chip-btn" data-act="formulation">📐 Formulation</button>
+  </div>
+  <div class="aria-input-box">
+    <input type="text" class="aria-input" id="ariaInput" placeholder="Command ARIA (e.g., 'optimize fleet')...">
+    <button class="aria-send-btn" id="ariaSendBtn"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<!-- Mathematical Formulation Modal -->
+<div class="modal-backdrop" id="formulationModal">
+  <div class="modal-card">
+    <div class="modal-top">
+      <h3><i class="fas fa-atom neon-accent"></i> Mathematical Formulation (SIH26137)</h3>
+      <button class="aria-close-btn" id="modalCloseBtn">&times;</button>
+    </div>
+    <div class="modal-content-body">
+      <h4 style="color: var(--neon-cyan); margin-bottom: 6px;">1. Problem Definition (CVRP)</h4>
+      <p>Given a depot \(0\), delivery customers \(C = \{1,\dots,n\}\), and homogeneous vehicles of capacity \(Q\), each customer has demand \(q_i\). Every stop is visited exactly once, each tour starts & ends at the depot, and vehicle load never exceeds \(Q\).</p>
+
+      <h4 style="color: var(--neon-cyan); margin: 12px 0 6px;">2. Traffic-Weighted Road Cost</h4>
+      <div class="math-block">
+        c<sub>ij</sub> = d<sub>ij</sub> · (1 + γ · w<sub>ij</sub>)
+      </div>
+      <p>Where \(d_{ij}\) is the shortest-path distance (km) and \(w_{ij} \in [0,1]\) is simulated congestion intensity along edge \((i,j)\) weighted by factor \(\gamma = 0.85\).</p>
+
+      <h4 style="color: var(--neon-cyan); margin: 12px 0 6px;">3. Quantum Particle Swarm Optimization (QPSO)</h4>
+      <p>Particles move in continuous search space \([0,1]^n\) with random-key order encoding. Mean best attractor \(mbest\) and local attractor \(p\) drive the wave equation:</p>
+      <div class="math-block">
+        x<sub>i</sub>(t+1) = p<sub>i</sub> ± β · |mbest - x<sub>i</sub>(t)| · ln(1 / u)
+      </div>
+      <p>Where \(u \sim U(0,1)\) and \(\beta\) decays from \(1.0 \to 0.5\) over iterations to transition from quantum exploration to fine local exploitation.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   AUDIO FEEDBACK ENGINE (Web Audio API)
+   ============================================================ */
+let audioCtx = null;
+let soundEnabled = true;
+
+function playBeep(freq = 600, type = 'sine', duration = 0.08) {
+  if (!soundEnabled) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+
+document.getElementById('soundToggleBtn').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  const icon = document.getElementById('soundIcon');
+  icon.className = soundEnabled ? 'fas fa-volume-high' : 'fas fa-volume-xmark';
+  if (soundEnabled) playBeep(880, 'triangle', 0.1);
+});
+
+/* ============================================================
+   CANVAS CYBER PARTICLES BACKGROUND
+   ============================================================ */
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class QuantumParticle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.size = 1 + Math.random() * 2;
+    this.color = Math.random() > 0.4 ? 'rgba(0, 243, 255, ' : 'rgba(155, 126, 222, ';
+    this.alpha = 0.2 + Math.random() * 0.5;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+  }
+  draw() {
+    ctx.fillStyle = this.color + this.alpha + ')';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 45; i++) {
+  particles.push(new QuantumParticle());
+}
+
+function animateBackground() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update();
+    particles[i].draw();
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 110) {
+        ctx.strokeStyle = `rgba(0, 243, 255, ${0.12 * (1 - dist / 110)})`;
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animateBackground);
+}
+animateBackground();
+
+/* ============================================================
+   CORE GEOSPATIAL & OPTIMIZATION CONFIG
+   ============================================================ */
+const DEPOT = { lat: 28.6315, lng: 77.2167 }; // Connaught Place, Delhi
+const VEHICLE_COLORS = ['#2267d8', '#e99422', '#1a9b68', '#7158d9', '#d94d5c', '#159e9a', '#b95791', '#4d8bea'];
+const HOTSPOTS = [
+  { name: 'Downtown Core', lat: 28.6280, lng: 77.2200, radius: 0.02, phase: 0.0 },
+  { name: 'Airport Junction', lat: 28.6450, lng: 77.1900, radius: 0.018, phase: 1.4 },
+  { name: 'University District', lat: 28.6150, lng: 77.2350, radius: 0.016, phase: 2.8 },
+];
+
+let customers = [];
+let capacity = 32;
+let map, depotMarker, customerMarkers = [], routeLines = [];
+let convChart;
+let running = false;
+let congestionSnapshot = null;
+
+const API_BASE = '';
+
+function initMap() {
+  map = L.map('map', { zoomControl: false }).setView([DEPOT.lat, DEPOT.lng], 12);
+  
+  // OpenStreetMap standard tiles: no API key is needed for normal interactive use.
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(map);
+
+  // Custom Neon Depot Marker
+  const depotIcon = L.divIcon({
+    className: 'depot-custom-marker',
+    html: `<div style="
+      width: 22px; height: 22px;
+      background: #f2b33d;
+      border: 3px solid #060913;
+      border-radius: 50%;
+      box-shadow: 0 0 15px #f2b33d, 0 0 30px rgba(242, 179, 61, 0.5);
+      display: flex; align-items: center; justify-content: center;
+      color: #060913; font-size: 11px; font-weight: bold;
+    "><i class="fas fa-warehouse" style="font-size: 10px;"></i></div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
+  });
+
+  depotMarker = L.marker([DEPOT.lat, DEPOT.lng], { icon: depotIcon }).addTo(map)
+    .bindTooltip('<strong>Central Depot</strong><br>Connaught Place, Delhi', { permanent: false, direction: 'top' });
+
+  // Map events
+  map.on('mousemove', (e) => {
+    document.getElementById('mapCoords').textContent = `${e.latlng.lat.toFixed(4)}° N, ${e.latlng.lng.toFixed(4)}° E`;
+  });
+}
+
+/* ============================================================
+   INSTANCE GENERATION
+   ============================================================ */
+function genInstance(n) {
+  customers = [];
+  for (let i = 0; i < n; i++) {
+    const ang = Math.random() * Math.PI * 2;
+    const r = 0.015 + Math.random() * 0.045;
+    customers.push({
+      id: i + 1,
+      lat: DEPOT.lat + r * Math.sin(ang),
+      lng: DEPOT.lng + r * Math.cos(ang) * 1.15,
+      demand: 4 + Math.floor(Math.random() * 7)
+    });
+  }
+  document.getElementById('hudActiveStops').innerHTML = `Stops: <strong>${n}</strong>`;
+  drawCustomers();
+  clearRoutes();
+  resetResults();
+  playBeep(520, 'sine', 0.08);
+}
+
+function drawCustomers() {
+  customerMarkers.forEach(m => map.removeLayer(m));
+  customerMarkers = [];
+  customers.forEach(c => {
+    const custIcon = L.divIcon({
+      className: 'cust-custom-marker',
+      html: `<div style="
+        width: 18px; height: 18px;
+        background: rgba(10, 16, 31, 0.9);
+        border: 2px solid #00f3ff;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(0, 243, 255, 0.4);
+        display: flex; align-items: center; justify-content: center;
+        color: #00f3ff; font-size: 9px; font-family: var(--font-mono); font-weight: 700;
+      ">${c.id}</div>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9]
+    });
+
+    const m = L.marker([c.lat, c.lng], { icon: custIcon }).addTo(map)
+      .bindTooltip(`<strong>Stop #${c.id}</strong><br>Demand: ${c.demand} units`);
+    customerMarkers.push(m);
+  });
+}
+
+function clearRoutes() {
+  routeLines.forEach(l => map.removeLayer(l));
+  routeLines = [];
+}
+
+function resetResults() {
+  document.getElementById('statDist').textContent = '—';
+  document.getElementById('statVeh').textContent = '—';
+  document.getElementById('statImprove').textContent = '—';
+  document.getElementById('statGap').textContent = '—';
+  document.getElementById('dispatchCount').textContent = '0 Routes';
+  document.getElementById('routeTable').querySelector('tbody').innerHTML =
+    '<tr><td colspan="3" style="text-align: center; color: var(--text-muted); padding: 24px 8px;">Execute the optimizer to generate vehicle route assignments.</td></tr>';
+  if (convChart) {
+    convChart.data.labels = [];
+    convChart.data.datasets[0].data = [];
+    convChart.data.datasets[1].data = [];
+    convChart.update();
+  }
+}
+
+/* ============================================================
+   CLIENT-SIDE ROAD GRAPH & DISTANCE MATRIX ENGINE
+   ============================================================ */
+function distKm(a, b) {
+  const R = 6371;
+  const x = (b.lng - a.lng) * Math.cos((a.lat + b.lat) / 2 * Math.PI / 180);
+  const y = (b.lat - a.lat);
+  return R * Math.PI / 180 * Math.sqrt(x * x + y * y);
+}
+
+function congestionPenalty(midpoint, snapshot) {
+  let mult = 1.0;
+  snapshot.forEach(h => {
+    const d = distKm(midpoint, h);
+    if (d < h.radiusKm) {
+      mult += (h.intensity / 100.0) * (1 - d / h.radiusKm) * 0.85;
+    }
+  });
+  return mult;
+}
+
+function takeCongestionSnapshot() {
+  const t = performance.now() / 1000;
+  return HOTSPOTS.map(h => ({
+    lat: h.lat,
+    lng: h.lng,
+    radiusKm: h.radius * 111,
+    intensity: 40 + 45 * Math.abs(Math.sin(t * 0.15 + h.phase))
+  }));
+}
+
+// PHASE 2 CHANGE: the backend zips its congestion list positionally against
+// HOTSPOTS and expects {name, intensity} — our local snapshot carries
+// {lat, lng, radiusKm, intensity} instead. Convert before sending so a
+// backend run actually optimizes against the same traffic state the zone
+// bars are showing, rather than the server generating its own snapshot at
+// a different instant.
+function toBackendCongestion(snapshot) {
+  return HOTSPOTS.map((h, i) => ({ name: h.name, intensity: snapshot[i].intensity }));
+}
+
+function edgeCost(a, b, snapshot) {
+  const mid = { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 };
+  return distKm(a, b) * congestionPenalty(mid, snapshot);
+}
+
+// Split tour with Capacity constraint (Prins Split algorithm)
+function splitTour(order, snapshot) {
+  const n = order.length;
+  const V = new Array(n + 1).fill(Infinity);
+  const P = new Array(n + 1).fill(-1);
+  V[0] = 0;
+  for (let i = 1; i <= n; i++) {
+    let load = 0, segDist = 0;
+    for (let j = i; j <= n; j++) {
+      const custJ = customers[order[j - 1]];
+      load += custJ.demand;
+      if (load > capacity) break;
+      if (j > i) {
+        const prev = customers[order[j - 2]];
+        segDist += edgeCost(prev, custJ, snapshot);
+      }
+      const first = customers[order[i - 1]];
+      const routeCost = edgeCost(DEPOT, first, snapshot) + segDist + edgeCost(custJ, DEPOT, snapshot);
+      if (V[i - 1] + routeCost < V[j]) {
+        V[j] = V[i - 1] + routeCost;
+        P[j] = i - 1;
+      }
+    }
+  }
+  const routes = [];
+  let j = n;
+  while (j > 0) {
+    const i = P[j];
+    routes.unshift(order.slice(i, j).map(idx => customers[idx].id));
+    j = i;
+  }
+  return { routes, cost: V[n] };
+}
+
+function decodeRandomKeys(keys, snapshot) {
+  const order = keys.map((k, i) => i).sort((a, b) => keys[a] - keys[b]);
+  return splitTour(order, snapshot);
+}
+
+function runNearestNeighbor(snapshot) {
+  const unvisited = new Set(customers.map((c, idx) => idx));
+  const routes = [];
+  let totalCost = 0;
+  while (unvisited.size > 0) {
+    let load = 0, cur = DEPOT, route = [];
+    while (true) {
+      let best = null, bestD = Infinity, bestIdx = -1;
+      unvisited.forEach(idx => {
+        const c = customers[idx];
+        if (load + c.demand <= capacity) {
+          const d = edgeCost(cur, c, snapshot);
+          if (d < bestD) { bestD = d; best = c; bestIdx = idx; }
+        }
+      });
+      if (best === null) break;
+      totalCost += bestD;
+      route.push(best.id);
+      load += best.demand;
+      cur = best;
+      unvisited.delete(bestIdx);
+    }
+    totalCost += edgeCost(cur, DEPOT, snapshot);
+    if (route.length > 0) routes.push(route);
+    if (route.length === 0) break;
+  }
+  return { routes, cost: totalCost, vehicles: routes.length };
+}
+
+function solveClientSwarm(mode, iterations = 70, particlesCount = 24, snapshot) {
+  const n = customers.length;
+  let particles = Array.from({ length: particlesCount }, () => ({
+    x: Array.from({ length: n }, () => Math.random()),
+    v: Array.from({ length: n }, () => (Math.random() - 0.5) * 0.2),
+    pbest: null,
+    pbestCost: Infinity
+  }));
+  let gbest = null, gbestCost = Infinity;
+  const history = [];
+
+  for (let it = 0; it < iterations; it++) {
+    particles.forEach(p => {
+      const { cost } = decodeRandomKeys(p.x, snapshot);
+      if (cost < p.pbestCost) { p.pbestCost = cost; p.pbest = p.x.slice(); }
+      if (cost < gbestCost) { gbestCost = cost; gbest = p.x.slice(); }
+    });
+    history.push(Math.round(gbestCost * 10) / 10);
+
+    if (mode === 'qpso') {
+      const mbest = new Array(n).fill(0);
+      particles.forEach(p => { for (let d = 0; d < n; d++) mbest[d] += p.pbest[d]; });
+      for (let d = 0; d < n; d++) mbest[d] /= particles.length;
+      const beta = 1.0 - (0.5) * (it / iterations); // Contraction-expansion parameter
+      particles.forEach(p => {
+        for (let d = 0; d < n; d++) {
+          const phi = Math.random();
+          const pd = phi * p.pbest[d] + (1 - phi) * gbest[d];
+          const u = Math.max(1e-6, Math.random());
+          const sign = Math.random() > 0.5 ? 1 : -1;
+          const nx = pd + sign * beta * Math.abs(mbest[d] - p.x[d]) * Math.log(1 / u);
+          p.x[d] = Math.min(1, Math.max(0, nx));
+        }
+      });
+    } else {
+      const w = 0.7, c1 = 1.5, c2 = 1.5;
+      particles.forEach(p => {
+        for (let d = 0; d < n; d++) {
+          const r1 = Math.random(), r2 = Math.random();
+          p.v[d] = w * p.v[d] + c1 * r1 * (p.pbest[d] - p.x[d]) + c2 * r2 * (gbest[d] - p.x[d]);
+          p.v[d] = Math.max(-0.25, Math.min(0.25, p.v[d]));
+          p.x[d] = Math.min(1, Math.max(0, p.x[d] + p.v[d]));
+        }
+      });
+    }
+  }
+  const final = decodeRandomKeys(gbest, snapshot);
+  return { history, routes: final.routes, cost: final.cost, vehicles: final.routes.length };
+}
+
+/* ============================================================
+   CHART INITIALIZATION
+   ============================================================ */
+function initChart() {
+  const ctx = document.getElementById('convChart').getContext('2d');
+  
+  const gradientQPSO = ctx.createLinearGradient(0, 0, 0, 160);
+  gradientQPSO.addColorStop(0, 'rgba(0, 243, 255, 0.35)');
+  gradientQPSO.addColorStop(1, 'rgba(0, 243, 255, 0.0)');
+
+  convChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'QPSO (Quantum)',
+          data: [],
+          borderColor: '#00f3ff',
+          backgroundColor: gradientQPSO,
+          borderWidth: 2.2,
+          fill: true,
+          pointRadius: 0,
+          tension: 0.2
+        },
+        {
+          label: 'Classical PSO',
+          data: [],
+          borderColor: '#9b7ede',
+          backgroundColor: 'transparent',
+          borderWidth: 1.8,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          tension: 0.2
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: '#94a3b8',
+            font: { family: 'IBM Plex Mono', size: 10 }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(6, 9, 19, 0.92)',
+          titleColor: '#00f3ff',
+          bodyColor: '#ffffff',
+          borderColor: '#00f3ff',
+          borderWidth: 1,
+          padding: 8
+        }
+      },
+      scales: {
+        x: {
+          ticks: { color: '#64748b', maxTicksLimit: 6, font: { family: 'IBM Plex Mono', size: 9 } },
+          grid: { color: 'rgba(255, 255, 255, 0.05)' }
+        },
+        y: {
+          ticks: { color: '#64748b', font: { family: 'IBM Plex Mono', size: 9 } },
+          grid: { color: 'rgba(255, 255, 255, 0.05)' }
+        }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   EXECUTION & BENCHMARKING
+   ============================================================ */
+async function runOptimization(alsoCompare = false) {
+  if (running) return;
+  running = true;
+  playBeep(700, 'sine', 0.12);
+
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('compareBtn').disabled = true;
+  document.getElementById('statusDot').className = 'radar-dot busy';
+  document.getElementById('statusText').textContent = 'Optimizing — Quantum Particle Swarm Active...';
+  document.getElementById('scanningLaser').classList.add('active');
+
+  const snap = takeCongestionSnapshot();
+  const iterations = 70;
+  const particlesCount = 24;
+
+  let qpsoResult = null;
+  let psoResult = null;
+  let nnResult = null;
+
+  try {
+    // Attempt FastAPI backend if available
+    const reqBody = {
+      customers: customers.map(c => ({ id: c.id, lat: c.lat, lng: c.lng, demand: c.demand })),
+      capacity,
+      iterations,
+      particles: particlesCount,
+      seed: 42,
+      congestion: toBackendCongestion(snap)
+    };
+
+    const backendPromise = fetch(`${API_BASE}/api/optimize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...reqBody, algorithm: 'qpso' })
+    }).then(res => res.ok ? res.json() : Promise.reject());
+
+    // 1.5s timeout for backend, otherwise fallback seamlessly to local JS engine
+    const res = await Promise.race([
+      backendPromise,
+      new Promise((_, rej) => setTimeout(() => rej('timeout'), 1200))
+    ]).catch(() => null);
+
+    if (res && res.routes) {
+      qpsoResult = res;
+      document.getElementById('backendStatusText').textContent = 'FASTAPI ENGINE CONNECTED';
+      const nnRes = await fetch(`${API_BASE}/api/optimize`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...reqBody, algorithm: 'nearest_neighbor' })
+      }).then(r => r.json()).catch(() => runNearestNeighbor(snap));
+      nnResult = nnRes;
+
+      if (alsoCompare) {
+        document.getElementById('statusText').textContent = 'Benchmarking — Classical PSO Baseline...';
+        psoResult = await fetch(`${API_BASE}/api/optimize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...reqBody, algorithm: 'pso' })
+        }).then(r => r.json()).catch(() => solveClientSwarm('pso', iterations, particlesCount, snap));
+      }
+    } else {
+      // Local client-side Quantum execution
+      document.getElementById('backendStatusText').textContent = 'LOCAL QUANTUM ENGINE';
+      qpsoResult = solveClientSwarm('qpso', iterations, particlesCount, snap);
+      nnResult = runNearestNeighbor(snap);
+      if (alsoCompare) {
+        psoResult = solveClientSwarm('pso', iterations, particlesCount, snap);
+      }
+    }
+
+    renderConvergence(qpsoResult.history, psoResult ? psoResult.history : null);
+    drawRoutes(qpsoResult.routes);
+    renderStats(qpsoResult, psoResult, nnResult);
+    renderTable(qpsoResult.routes);
+
+    document.getElementById('statusDot').className = 'radar-dot done';
+    document.getElementById('statusText').textContent = 'Optimal CVRP routes converged';
+    playBeep(980, 'sine', 0.2);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('statusDot').className = 'radar-dot error';
+    document.getElementById('statusText').textContent = `Execution failed: ${err.message || 'Error'}`;
+  } finally {
+    document.getElementById('scanningLaser').classList.remove('active');
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('compareBtn').disabled = false;
+    running = false;
+  }
+}
+
+function renderConvergence(qpsoHistory, psoHistory = null) {
+  convChart.data.labels = qpsoHistory.map((_, i) => i + 1);
+  convChart.data.datasets[0].data = qpsoHistory;
+  convChart.data.datasets[1].data = psoHistory || [];
+  convChart.update();
+}
+
+function drawRoutes(routes) {
+  clearRoutes();
+  const custMap = new Map(customers.map(c => [c.id, c]));
+
+  routes.forEach((route, idx) => {
+    const color = VEHICLE_COLORS[idx % VEHICLE_COLORS.length];
+    const pts = [[DEPOT.lat, DEPOT.lng], ...route.map(id => {
+      const c = custMap.get(id);
+      return [c.lat, c.lng];
+    }), [DEPOT.lat, DEPOT.lng]];
+
+    const line = L.polyline(pts, {
+      color: color,
+      weight: 3.5,
+      opacity: 0.9,
+      lineCap: 'round',
+      lineJoin: 'round',
+      dashArray: null
+    }).addTo(map);
+
+    routeLines.push(line);
+  });
+
+  // Re-render markers colored by vehicle
+  customerMarkers.forEach(m => map.removeLayer(m));
+  customerMarkers = [];
+  routes.forEach((route, idx) => {
+    const color = VEHICLE_COLORS[idx % VEHICLE_COLORS.length];
+    route.forEach(id => {
+      const c = custMap.get(id);
+      const custIcon = L.divIcon({
+        className: 'cust-custom-marker',
+        html: `<div style="
+          width: 20px; height: 20px;
+          background: #060913;
+          border: 2px solid ${color};
+          border-radius: 50%;
+          box-shadow: 0 0 10px ${color};
+          display: flex; align-items: center; justify-content: center;
+          color: ${color}; font-size: 10px; font-family: var(--font-mono); font-weight: 700;
+        ">${id}</div>`,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+
+      const m = L.marker([c.lat, c.lng], { icon: custIcon }).addTo(map)
+        .bindTooltip(`<strong>Stop #${id}</strong><br>Assigned: Vehicle ${idx + 1}<br>Demand: ${c.demand}`);
+      customerMarkers.push(m);
+    });
+  });
+}
+
+function renderStats(qpso, pso, nn) {
+  const qCost = qpso.cost;
+  document.getElementById('statDist').textContent = qCost.toFixed(1);
+  document.getElementById('statVeh').textContent = qpso.vehicles;
+  document.getElementById('dispatchCount').textContent = `${qpso.vehicles} Active`;
+
+  if (nn && nn.cost) {
+    const improve = ((nn.cost - qCost) / nn.cost) * 100;
+    document.getElementById('statImprove').textContent = `${improve >= 0 ? '−' : '+'}${Math.abs(improve).toFixed(1)}%`;
+  }
+
+  if (pso && pso.cost) {
+    const gap = ((pso.cost - qCost) / pso.cost) * 100;
+    document.getElementById('statGap').textContent = `${gap >= 0 ? '−' : '+'}${Math.abs(gap).toFixed(1)}%`;
+  } else {
+    document.getElementById('statGap').textContent = 'run compare';
+  }
+}
+
+function renderTable(routes) {
+  const tbody = document.querySelector('#routeTable tbody');
+  const custMap = new Map(customers.map(c => [c.id, c]));
+  tbody.innerHTML = '';
+
+  routes.forEach((route, idx) => {
+    const color = VEHICLE_COLORS[idx % VEHICLE_COLORS.length];
+    const load = route.reduce((sum, id) => sum + (custMap.get(id)?.demand || 0), 0);
+    const pct = Math.min(100, Math.round((load / capacity) * 100));
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="veh-swatch" style="background:${color}; color:${color}"></span>V${idx + 1}</td>
+      <td style="color:var(--text-secondary);">${route.join(' → ')}</td>
+      <td>
+        <span style="font-weight:600; color:${load > capacity ? 'var(--neon-red)' : 'var(--text-primary)'}">${load}/${capacity}</span>
+        <span class="cap-bar-track">
+          <span class="cap-bar-fill" style="width:${pct}%; background:${color}"></span>
+        </span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ============================================================
+   CONGESTION ZONES UI & LIVE CLOCK
+   ============================================================ */
+function renderZones() {
+  const container = document.getElementById('zoneContainer');
+  container.innerHTML = '';
+  HOTSPOTS.forEach(h => {
+    const div = document.createElement('div');
+    div.className = 'zone-item';
+    div.innerHTML = `
+      <div class="zone-info">
+        <span class="zone-name">${h.name}</span>
+        <span class="zone-pct mono" id="pct-${h.name}">—</span>
+      </div>
+      <div class="zone-track">
+        <div class="zone-bar" id="bar-${h.name}" style="width:0%; background:var(--neon-green)"></div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function tickClock() {
+  const t = performance.now() / 1000;
+  HOTSPOTS.forEach(h => {
+    const intensity = Math.round(40 + 45 * Math.abs(Math.sin(t * 0.15 + h.phase)));
+    const bar = document.getElementById('bar-' + h.name);
+    const pct = document.getElementById('pct-' + h.name);
+    if (bar) {
+      bar.style.width = intensity + '%';
+      bar.style.background = intensity > 75 ? 'var(--neon-red)' : intensity > 50 ? 'var(--neon-amber)' : 'var(--neon-green)';
+    }
+    if (pct) pct.textContent = intensity + '%';
+  });
+
+  const now = new Date();
+  document.getElementById('clockBadge').innerHTML = `<i class="far fa-clock"></i> ${now.toTimeString().slice(0, 8)} UTC`;
+  setTimeout(tickClock, 400);
+}
+
+/* ============================================================
+   ARIA AI ASSISTANT CONTROLLER
+   ============================================================ */
+const ariaToggleBtn = document.getElementById('ariaToggleBtn');
+const ariaPanel = document.getElementById('ariaPanel');
+const ariaCloseBtn = document.getElementById('ariaCloseBtn');
+const ariaInput = document.getElementById('ariaInput');
+const ariaSendBtn = document.getElementById('ariaSendBtn');
+const ariaMessages = document.getElementById('ariaMessages');
+
+function toggleAria() {
+  const isShown = ariaPanel.style.display === 'flex';
+  ariaPanel.style.display = isShown ? 'none' : 'flex';
+  playBeep(640, 'triangle', 0.08);
+  if (!isShown) ariaInput.focus();
+}
+
+ariaToggleBtn.addEventListener('click', toggleAria);
+ariaCloseBtn.addEventListener('click', toggleAria);
+
+function addAriaMessage(text, isUser = false) {
+  const div = document.createElement('div');
+  div.className = `aria-msg ${isUser ? 'user' : 'bot'}`;
+  div.innerHTML = text;
+  ariaMessages.appendChild(div);
+  ariaMessages.scrollTop = ariaMessages.scrollHeight;
+}
+
+function handleAriaCommand(text) {
+  const cmd = text.toLowerCase().trim();
+  addAriaMessage(text, true);
+
+  setTimeout(() => {
+    if (cmd.includes('optimize') || cmd.includes('run') || cmd.includes('qpso')) {
+      addAriaMessage("Executing Quantum Particle Swarm Optimization across current network stops...");
+      runOptimization(false);
+    } else if (cmd.includes('benchmark') || cmd.includes('compare')) {
+      addAriaMessage("Running dual benchmark: QPSO vs Classical PSO & Nearest-Neighbor greedy baseline...");
+      runOptimization(true);
+    } else if (cmd.includes('rescan') || cmd.includes('new') || cmd.includes('scan')) {
+      const n = parseInt(document.getElementById('custSlider').value);
+      genInstance(n);
+      addAriaMessage(`Generated fresh geospatial instance with ${n} delivery points and randomized demands.`);
+    } else if (cmd.includes('formulation') || cmd.includes('math')) {
+      document.getElementById('formulationModal').style.display = 'flex';
+      addAriaMessage("Displaying mathematical formulation modal for CVRP & QPSO mechanics.");
+    } else {
+      addAriaMessage(`Telemetry acknowledged. You can say <strong>"optimize"</strong>, <strong>"benchmark"</strong>, or <strong>"re-scan"</strong>.`);
+    }
+  }, 350);
+}
+
+ariaSendBtn.addEventListener('click', () => {
+  if (ariaInput.value.trim()) {
+    handleAriaCommand(ariaInput.value);
+    ariaInput.value = '';
+  }
+});
+
+ariaInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && ariaInput.value.trim()) {
+    handleAriaCommand(ariaInput.value);
+    ariaInput.value = '';
+  }
+});
+
+document.querySelectorAll('.chip-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const act = btn.getAttribute('data-act');
+    if (act === 'optimize') handleAriaCommand('Run QPSO optimization');
+    else if (act === 'benchmark') handleAriaCommand('Benchmark algorithms');
+    else if (act === 'rescan') handleAriaCommand('Re-scan city grid');
+    else if (act === 'formulation') handleAriaCommand('View math formulation');
+  });
+});
+
+/* ============================================================
+   MODAL CONTROLLER
+   ============================================================ */
+const formulationBtn = document.getElementById('formulationBtn');
+const formulationModal = document.getElementById('formulationModal');
+const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+formulationBtn.addEventListener('click', () => {
+  formulationModal.style.display = 'flex';
+  playBeep(650, 'sine', 0.08);
+});
+modalCloseBtn.addEventListener('click', () => {
+  formulationModal.style.display = 'none';
+});
+window.addEventListener('click', (e) => {
+  if (e.target === formulationModal) formulationModal.style.display = 'none';
+});
+
+/* ============================================================
+   MAP CONTROLS (Center, Laser, Fullscreen)
+   ============================================================ */
+document.getElementById('centerMapBtn').addEventListener('click', () => {
+  map.setView([DEPOT.lat, DEPOT.lng], 12);
+  playBeep(720, 'sine', 0.06);
+});
+
+document.getElementById('toggleLaserBtn').addEventListener('click', () => {
+  const laser = document.getElementById('scanningLaser');
+  laser.classList.toggle('active');
+  playBeep(800, 'sine', 0.06);
+});
+
+document.getElementById('fullscreenBtn').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
+  }
+});
+
+/* ============================================================
+   EVENT LISTENERS & STARTUP
+   ============================================================ */
+document.getElementById('custSlider').addEventListener('input', e => {
+  document.getElementById('custVal').textContent = e.target.value;
+});
+document.getElementById('capSlider').addEventListener('input', e => {
+  document.getElementById('capVal').textContent = e.target.value;
+});
+
+document.getElementById('genBtn').addEventListener('click', () => {
+  capacity = parseInt(document.getElementById('capSlider').value);
+  genInstance(parseInt(document.getElementById('custSlider').value));
+});
+
+document.getElementById('runBtn').addEventListener('click', () => runOptimization(false));
+document.getElementById('compareBtn').addEventListener('click', () => runOptimization(true));
+
+// Initialize everything on load
+initMap();
+initChart();
+renderZones();
+capacity = parseInt(document.getElementById('capSlider').value);
+genInstance(parseInt(document.getElementById('custSlider').value));
+tickClock();
+</script>
+</body>
+</html>
