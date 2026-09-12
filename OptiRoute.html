@@ -1138,84 +1138,580 @@
     --text-primary:#17233a; --text-secondary:#63718a; --text-muted:#8b97aa;
     --font-heading:'Inter',-apple-system,sans-serif; --font-body:'Inter',-apple-system,sans-serif;
   }
-  body{background:#f5f7fb;color:var(--text-primary);}
-  #bgCanvas,.cyber-grid-overlay,.vignette-glow,.scanning-laser{display:none!important;}
-  .topbar{height:74px;padding:0 30px;background:rgba(255,255,255,.94);border-bottom:1px solid #e6ebf2;box-shadow:0 1px 10px rgba(31,50,84,.04);}
-  .brand-logo-hex{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#2d75df,#1554bc);clip-path:none;box-shadow:0 8px 16px rgba(34,103,216,.22);}
-  .brand-logo-hex::before{display:none;}.brand-logo-hex i{font-size:18px;color:white;}
-  .brand-name{font-size:19px;letter-spacing:-.6px;color:#17233a;text-shadow:none;}.neon-accent{color:#2267d8;text-shadow:none;}
-  .brand-sub{font-family:var(--font-body);font-size:10px;letter-spacing:.08em;color:#8895a8;}
-  .badge-chip{border:1px solid #e3e9f2;background:#f8faff;color:#64718a;border-radius:999px;box-shadow:none;font-family:var(--font-body);font-size:10.5px;}
-  .badge-chip i{color:#2267d8;}.pulse-chip{border-color:#cae9dc;background:#f2fbf7;color:#217755;}.pulse-dot-green{box-shadow:none;}
-  .btn-icon{font-family:var(--font-body);border:1px solid #e3e9f2;background:#fff;color:#52627b;border-radius:9px;box-shadow:none;}.btn-icon:hover{color:#2267d8;border-color:#b8ccea;background:#f7faff;}
-  .layout-grid{height:calc(100vh - 74px);padding:18px 22px;gap:18px;grid-template-columns:285px minmax(520px,1fr) 335px;background:#f5f7fb;}
-  .column{gap:16px;}.cyber-panel{border:1px solid #e3e9f2;border-radius:15px;background:#fff;box-shadow:0 3px 14px rgba(31,50,84,.045);padding:16px;}
-  .cyber-panel::before,.cyber-panel::after{display:none;}.panel-header{border-bottom:1px solid #edf0f5;padding-bottom:12px;margin-bottom:15px;}
-  .panel-title{font-family:var(--font-body);font-size:12.5px;letter-spacing:0;color:#263650;}.panel-title i{color:#2267d8;}
-  .panel-tag{background:#eff5ff;border:0;border-radius:999px;color:#5380c3;font-family:var(--font-body);font-size:9px;padding:4px 8px;}
-  .field-box{background:#fbfcfe;border:1px solid #edf0f5;border-radius:10px;padding:11px 12px;}.field-label{font-size:11px;color:#66748b;}.field-val-badge{background:#eaf1ff;color:#2267d8;border:0;border-radius:7px;}
-  input[type=range]{background:linear-gradient(90deg,#2d75df,#dbe7fb);}input[type=range]::-webkit-slider-thumb{background:#fff;border:3px solid #2d75df;box-shadow:0 2px 5px rgba(34,103,216,.25);}
-  .cyber-btn{font-family:var(--font-body);border-radius:10px;letter-spacing:0;font-size:11.5px;box-shadow:none;}.btn-qpso-primary{background:#2267d8;color:white;border:1px solid #2267d8;box-shadow:0 7px 14px rgba(34,103,216,.17);}.btn-qpso-primary:hover{background:#185abf;}.btn-cyber-secondary{background:white;color:#52627b;border:1px solid #dce4f0;}.btn-cyber-secondary:hover{border-color:#8aafe7;background:#f6f9ff;color:#2267d8;}
-  .status-telemetry{background:#f7f9fc;border:1px solid #edf0f5;border-radius:9px;color:#718097;font-family:var(--font-body);}.radar-dot{box-shadow:none;background:#1a9b68;}.radar-dot::after{border-color:#1a9b68;}
-  .quantum-stats-row{gap:8px;}.q-stat-card{background:#f8faff;border:1px solid #e8edf5;border-radius:9px;}.q-stat-label{font-family:var(--font-body);font-size:8px;color:#8996a9;}.q-stat-val{font-family:var(--font-body);font-size:12px;color:#273957;}
-  .zone-row{border-bottom:1px solid #edf0f5;}.zone-name{font-family:var(--font-body);color:#465875;}.zone-bar-track{background:#edf1f6;}.zone-pct{font-family:var(--font-body);color:#63718a;}
-  .center-column{min-width:0;}.map-container-card{border:1px solid #dfe6ef;border-radius:18px;box-shadow:0 10px 30px rgba(31,50,84,.09);background:white;overflow:hidden;}
-  #map{filter:saturate(.88) contrast(.98) brightness(1.02);}.map-hud-top{top:16px;left:16px;gap:8px;}.hud-badge,.map-hud-pill{border:1px solid #e2e8f1;background:rgba(255,255,255,.94);box-shadow:0 3px 10px rgba(31,50,84,.1);backdrop-filter:blur(8px);color:#617089;font-family:var(--font-body);}.hud-badge i{color:#2267d8;}.hud-badge strong{color:#263650;}
-  .map-hud-controls{top:16px;right:16px;}.map-ctrl-btn{background:rgba(255,255,255,.95);border:1px solid #e2e8f1;color:#50627c;box-shadow:0 2px 8px rgba(31,50,84,.08);}.map-ctrl-btn:hover{color:#2267d8;border-color:#a9c3e9;}.map-hud-bottom{bottom:15px;left:16px;}.map-hud-pill{font-size:10px;}
-  .stat-grid-4{gap:8px;}.stat-card-hud{background:#f9fbfe;border:1px solid #e8edf5;border-radius:10px;padding:11px;box-shadow:none;}.stat-card-hud::before{display:none;}.stat-card-hud.cyan{border-top:3px solid #3985f7;}.stat-card-hud.amber{border-top:3px solid #e99422;}.stat-card-hud.win{border-top:3px solid #1a9b68;}.stat-card-hud.purple{border-top:3px solid #7158d9;}.stat-val-big{font-family:var(--font-body);font-size:17px;color:#253650;text-shadow:none;}.stat-lbl-sub{font-family:var(--font-body);font-size:8.5px;color:#8390a3;}
-  .route-table-wrap{border:1px solid #edf0f5;border-radius:10px;}.cyber-table th{background:#f8faff;border-color:#e8edf5;color:#7b889d;font-family:var(--font-body);font-size:9px;}.cyber-table td{border-color:#edf0f5;color:#465875;font-family:var(--font-body);font-size:10.5px;}.route-vehicle-chip{box-shadow:none;}
-  .aria-floating-badge,.aria-panel-popup{display:none!important;}.leaflet-control-zoom a{background:#fff!important;color:#52627b!important;border-color:#e2e8f1!important;}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#fff!important;color:#263650!important;border:1px solid #e2e8f1!important;box-shadow:0 5px 18px rgba(31,50,84,.12);}
-  /* MAP-FIRST WORKSPACE — replaces the fixed three-column dashboard */
-  .layout-grid{display:block;position:relative;height:calc(100vh - 74px);padding:18px 22px;overflow:hidden;}
-  .center-column{position:absolute;inset:18px 22px;z-index:1;display:block;}
-  .center-column .map-container-card{height:100%;}
-  .layout-grid > .column:first-child{position:absolute;z-index:5;left:38px;top:36px;bottom:36px;width:292px;display:flex;overflow-y:auto;padding:0 2px 0 0;scrollbar-width:thin;}
-  .layout-grid > .column:last-child{position:absolute;z-index:6;left:360px;right:40px;bottom:38px;display:grid;grid-template-columns:270px 310px minmax(360px,1fr);gap:12px;align-items:stretch;max-height:260px;}
-  .layout-grid > .column:last-child .cyber-panel{margin:0;min-height:0;overflow:auto;}
-  .layout-grid > .column:last-child .cyber-panel:first-child{padding-bottom:10px;}
-  .layout-grid > .column:last-child .cyber-panel:last-child{display:flex!important;}
-  .layout-grid > .column:last-child .panel-header{margin-bottom:10px;padding-bottom:9px;}
-  .layout-grid > .column:last-child .stat-grid-4{grid-template-columns:1fr 1fr;}
-  .layout-grid > .column:last-child .stat-card-hud{padding:8px;}
-  .layout-grid > .column:last-child .stat-val-big{font-size:16px;}
-  .layout-grid > .column:last-child .route-table-wrap{max-height:170px;overflow:auto;}
-  @media(max-width:1100px){.layout-grid > .column:first-child{left:28px;width:250px;}.layout-grid > .column:last-child{left:300px;right:28px;grid-template-columns:250px 280px minmax(280px,1fr);}.topbar{padding:0 16px;}.topbar-center{gap:5px;}.badge-chip:nth-child(2){display:none;}}
-  /* SCROLLING PAGE LAYOUT — map workspace followed by detailed results */
-  body{overflow-x:hidden;overflow-y:auto;}
-  .layout-grid{display:grid;grid-template-columns:292px minmax(0,1fr);grid-template-rows:auto auto;gap:22px;height:auto;min-height:calc(100vh - 74px);padding:22px;overflow:visible;}
-  .layout-grid > .column:first-child{position:static;grid-column:1;grid-row:1;width:auto;display:flex;overflow:visible;padding:0;}
-  .center-column{position:static;inset:auto;grid-column:2;grid-row:1;display:block;min-height:620px;}
-  .center-column .map-container-card{height:clamp(620px,78vh,860px);}
-  .layout-grid > .column:last-child{position:static;grid-column:1 / -1;grid-row:2;display:grid;grid-template-columns:minmax(260px,.85fr) minmax(300px,1fr) minmax(420px,1.5fr);gap:18px;align-items:stretch;max-height:none;}
-  .layout-grid > .column:last-child .cyber-panel{margin:0;min-height:260px;overflow:visible;}
-  .layout-grid > .column:last-child .cyber-panel:last-child{display:flex!important;}
-  .layout-grid > .column:last-child .route-table-wrap{max-height:260px;overflow:auto;}
-  @media(max-width:900px){.layout-grid{grid-template-columns:1fr;padding:14px;}.layout-grid > .column:first-child,.center-column{grid-column:1;}.layout-grid > .column:first-child{grid-row:1;}.center-column{grid-row:2;min-height:520px;}.center-column .map-container-card{height:620px;}.layout-grid > .column:last-child{grid-column:1;grid-row:3;grid-template-columns:1fr;}.topbar-center{display:none;}}
-  /* DARK THEME */
-  :root{--bg-dark:#08111f;--bg-surface:#0d192a;--panel-bg:#101d30;--panel-alt:#0b1627;--panel-border:#243653;--panel-border-glow:#355b8e;--text-primary:#eaf1fb;--text-secondary:#a3b2c8;--text-muted:#70819b;--neon-cyan:#62a8ff;--neon-blue:#408cff;--neon-purple:#ab91ff;--neon-amber:#f6b74c;--neon-green:#56d6a0;--neon-red:#ff7182;}
-  body,.layout-grid{background:#08111f;color:var(--text-primary);}
-  .topbar{background:rgba(8,17,31,.94);border-color:#1c2d47;box-shadow:0 1px 14px rgba(0,0,0,.3);}
-  .brand-name{color:#f3f7ff;}.brand-sub{color:#8292a9;}.brand-logo-hex{background:linear-gradient(135deg,#458ff5,#265eb8);}
-  .badge-chip{background:#101d30;border-color:#283b59;color:#a9b8ce;}.pulse-chip{background:#102b27;border-color:#245c50;color:#72dcb2;}
-  .btn-icon{background:#101d30;border-color:#2a3e5d;color:#aab9ce;}.btn-icon:hover{background:#172943;border-color:#4e7fbb;color:#81b7ff;}
-  .cyber-panel{background:linear-gradient(145deg,#101d30,#0c1728);border-color:#233651;box-shadow:0 8px 22px rgba(0,0,0,.2);}
-  .panel-header{border-color:#22344e;}.panel-title{color:#e5edf9;}.panel-tag{background:#182b48;color:#9bc4ff;}
-  .field-box,.status-telemetry{background:#0b1627;border-color:#22344e;}.field-label,.status-telemetry{color:#a4b3c8;}.field-val-badge{background:#17345b;color:#91c1ff;}
-  input[type=range]{background:linear-gradient(90deg,#4b90ef,#253b58);}input[type=range]::-webkit-slider-thumb{background:#101d30;border-color:#62a8ff;}
-  .btn-cyber-secondary{background:#142238;border-color:#2b4161;color:#c1cde0;}.btn-cyber-secondary:hover{background:#1a2e4c;border-color:#5c92d2;color:#b9d8ff;}
-  .q-stat-card,.stat-card-hud{background:#0d192a;border-color:#233651;}.q-stat-label,.stat-lbl-sub{color:#8191a7;}.q-stat-val,.stat-val-big{color:#edf4ff;}
-  .zone-row{border-color:#20334d;}.zone-name,.zone-pct{color:#bdc9da;}.zone-bar-track{background:#233650;}
-  .map-container-card{border-color:#2a405f;background:#0b1627;box-shadow:0 14px 35px rgba(0,0,0,.32);}
-  #map{filter:brightness(.72) saturate(.76) contrast(1.08) hue-rotate(178deg);}.hud-badge,.map-hud-pill{background:rgba(12,23,40,.9);border-color:#2a405f;color:#b3c3d9;box-shadow:0 4px 12px rgba(0,0,0,.28);}.hud-badge strong{color:#eef5ff;}
-  .map-ctrl-btn{background:#101d30;border-color:#2a405f;color:#b4c4d9;}.map-ctrl-btn:hover{background:#182c49;color:#91c1ff;}
-  .route-table-wrap{border-color:#233651;}.cyber-table th{background:#0c1728;border-color:#233651;color:#8fa0b8;}.cyber-table td{border-color:#1e304a;color:#c2cede;}
-  .leaflet-control-zoom a{background:#101d30!important;color:#b9d4f8!important;border-color:#2b4161!important;}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#101d30!important;color:#eaf1fb!important;border-color:#2b4161!important;}
-  /* LIVE ROUTE LEGEND */
-  .route-legend-card{margin-top:22px;padding:22px 24px;border:1px solid #233651;border-radius:16px;background:linear-gradient(145deg,#101d30,#0c1728);box-shadow:0 8px 22px rgba(0,0,0,.18);}
-  .legend-heading{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:19px;}.legend-eyebrow{display:block;margin-bottom:5px;color:#76adf7;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;}.legend-heading h2{margin:0;color:#edf4ff;font-family:var(--font-body);font-size:17px;letter-spacing:-.3px;}.legend-live{display:flex;align-items:center;gap:7px;color:#a7b8ce;font-size:11px;white-space:nowrap;}.legend-live span{width:8px;height:8px;border-radius:50%;background:#56d6a0;box-shadow:0 0 0 4px rgba(86,214,160,.1);}
-  .legend-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;}.legend-item{display:flex;gap:11px;min-width:0;padding:13px;border:1px solid #21344f;border-radius:12px;background:rgba(4,11,22,.28);}.legend-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:9px;font-size:13px;}.depot-icon{background:rgba(246,183,76,.13);color:#f6b74c;}.stop-icon{background:rgba(98,168,255,.13);color:#62a8ff;}.route-icon{background:rgba(171,145,255,.13);color:#ab91ff;}.graph-icon{background:rgba(86,214,160,.13);color:#56d6a0;}.legend-item strong{display:block;color:#e4edf9;font-size:11.5px;margin:1px 0 5px;}.legend-item p{margin:0;color:#8ea0b9;font-size:10px;line-height:1.45;}
-  @media(max-width:900px){.legend-grid{grid-template-columns:1fr 1fr;}.route-legend-card{padding:18px;}}
-  @media(max-width:560px){.legend-heading{align-items:flex-start;flex-direction:column;gap:8px;}.legend-grid{grid-template-columns:1fr;}}
+  
+  /* ============================================================
+     TECHY GLASSMORPHISM THEME & MULTI-CITY STYLING
+     ============================================================ */
+  :root {
+    --bg-dark: #060b16;
+    --bg-surface: #0a1324;
+    --panel-bg: rgba(11, 20, 36, 0.72);
+    --panel-alt: rgba(7, 14, 28, 0.82);
+    --panel-border: rgba(0, 243, 255, 0.18);
+    --panel-border-glow: rgba(0, 243, 255, 0.45);
+    --text-primary: #eef5fc;
+    --text-secondary: #9db0ca;
+    --text-muted: #6b7f99;
+    --neon-cyan: #00f3ff;
+    --neon-blue: #0099ff;
+    --neon-purple: #a476ff;
+    --neon-amber: #f5b742;
+    --neon-green: #00ff9d;
+    --neon-red: #ff3366;
+    --glass-blur: 16px;
+  }
+
+  body {
+    background: #060b16;
+    color: var(--text-primary);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  /* Animated Cyber Background & Grid Canvas */
+  #bgCanvas {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .cyber-grid-overlay {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: 
+      linear-gradient(to right, rgba(0, 243, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 243, 255, 0.035) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .vignette-glow {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at 50% 30%, transparent 40%, rgba(3, 6, 12, 0.82) 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Top Bar with Frosted Glass */
+  .topbar {
+    position: relative;
+    z-index: 10;
+    height: 72px;
+    padding: 0 28px;
+    background: rgba(8, 16, 30, 0.78) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.18) !important;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.45), inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .brand-logo-hex {
+    background: linear-gradient(135deg, #00f3ff, #0077ff);
+    box-shadow: 0 0 16px rgba(0, 243, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    border-radius: 12px;
+  }
+  .brand-name { color: #f3f8fe; }
+  .brand-sub { color: #7f93ad; }
+
+  /* Glass Badges & Chips */
+  .badge-chip {
+    background: rgba(10, 20, 36, 0.65) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(0, 243, 255, 0.18) !important;
+    color: #a6bbd5 !important;
+    border-radius: 999px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  .badge-chip i { color: var(--neon-cyan); }
+  .pulse-chip {
+    background: rgba(0, 255, 157, 0.08) !important;
+    border-color: rgba(0, 255, 157, 0.3) !important;
+    color: #61f2ba !important;
+  }
+
+  .btn-icon {
+    background: rgba(11, 22, 40, 0.72);
+    border: 1px solid rgba(0, 243, 255, 0.18);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #a4b9d3;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: all 0.2s ease;
+  }
+  .btn-icon:hover {
+    background: rgba(0, 243, 255, 0.12);
+    border-color: rgba(0, 243, 255, 0.45);
+    color: #00f3ff;
+    box-shadow: 0 0 14px rgba(0, 243, 255, 0.2);
+  }
+
+  /* Grid Layout */
+  .layout-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 22px;
+    padding: 22px 26px;
+    min-height: calc(100vh - 72px);
+    background: transparent;
+  }
+  .layout-grid > .column:first-child {
+    grid-column: 1;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .center-column {
+    grid-column: 2;
+    grid-row: 1;
+    display: block;
+    min-height: 640px;
+  }
+  .center-column .map-container-card {
+    height: clamp(620px, 78vh, 880px);
+  }
+  .layout-grid > .column:last-child {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: minmax(280px, 0.85fr) minmax(320px, 1fr) minmax(420px, 1.5fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  /* Frosted Glass Cyber Panels */
+  .cyber-panel {
+    background: rgba(10, 18, 33, 0.72) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    border: 1px solid rgba(0, 243, 255, 0.18) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 12px 36px 0 rgba(0, 0, 0, 0.45), inset 0 1px 0 0 rgba(255, 255, 255, 0.08) !important;
+    padding: 18px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .cyber-panel:hover {
+    border-color: rgba(0, 243, 255, 0.35) !important;
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 243, 255, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  }
+
+  .panel-header {
+    border-bottom: 1px solid rgba(0, 243, 255, 0.12);
+    padding-bottom: 11px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    color: #eaf2fb;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .panel-title i { color: var(--neon-cyan); margin-right: 6px; }
+  .panel-tag {
+    background: rgba(0, 243, 255, 0.1);
+    border: 1px solid rgba(0, 243, 255, 0.25);
+    border-radius: 999px;
+    color: #00f3ff;
+    font-size: 9px;
+    font-family: var(--font-mono);
+    padding: 3px 9px;
+  }
+
+  /* Frosted Glass Inputs and Field Boxes */
+  .field-box, .status-telemetry {
+    background: rgba(6, 12, 24, 0.6) !important;
+    border: 1px solid rgba(0, 243, 255, 0.12) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+  .field-label { color: #8fa5c2; font-size: 11.5px; }
+  .field-val-badge {
+    background: rgba(0, 243, 255, 0.12);
+    border: 1px solid rgba(0, 243, 255, 0.25);
+    color: #00f3ff;
+    border-radius: 7px;
+    padding: 2px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* Multi-City Selector Grid */
+  .city-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .city-pill-btn {
+    padding: 7px 4px;
+    background: rgba(10, 18, 34, 0.7);
+    border: 1px solid rgba(0, 243, 255, 0.14);
+    border-radius: 9px;
+    color: #8da4c0;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .city-pill-btn:hover {
+    color: #fff;
+    border-color: rgba(0, 243, 255, 0.4);
+    background: rgba(0, 243, 255, 0.08);
+    transform: translateY(-1px);
+  }
+  .city-pill-btn.active {
+    background: linear-gradient(135deg, rgba(0, 243, 255, 0.22), rgba(0, 153, 255, 0.28));
+    border-color: #00f3ff;
+    color: #00f3ff;
+    box-shadow: 0 0 14px rgba(0, 243, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+  }
+
+  /* Range Sliders */
+  input[type=range] {
+    width: 100%;
+    accent-color: #00f3ff;
+    margin-top: 6px;
+  }
+
+  /* Buttons */
+  .cyber-btn {
+    width: 100%;
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+  }
+  .btn-qpso-primary {
+    background: linear-gradient(135deg, #00f3ff, #0088ff);
+    color: #040914;
+    border: none;
+    box-shadow: 0 4px 18px rgba(0, 243, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .btn-qpso-primary:hover {
+    box-shadow: 0 6px 26px rgba(0, 243, 255, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+  }
+  .btn-cyber-secondary {
+    background: rgba(14, 26, 48, 0.7);
+    border: 1px solid rgba(0, 243, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #b0c6e0;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .btn-cyber-secondary:hover {
+    background: rgba(0, 243, 255, 0.12);
+    border-color: rgba(0, 243, 255, 0.45);
+    color: #00f3ff;
+  }
+
+  /* Quantum Stats & Telemetry */
+  .quantum-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+  }
+  .q-stat-card {
+    background: rgba(7, 14, 28, 0.65) !important;
+    border: 1px solid rgba(0, 243, 255, 0.14) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .q-stat-label { font-size: 8.5px; color: #7f95b3; font-family: var(--font-mono); letter-spacing: 0.05em; }
+  .q-stat-val { font-size: 14px; font-weight: 700; color: #eaf2fb; font-family: var(--font-mono); margin-top: 3px; }
+
+  /* Traffic Zone Bars */
+  .zone-item { margin-bottom: 9px; }
+  .zone-info { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; color: #a4bad4; }
+  .zone-track { height: 6px; background: rgba(255, 255, 255, 0.06); border-radius: 3px; overflow: hidden; }
+  .zone-bar { height: 100%; border-radius: 3px; transition: width 0.3s ease, background 0.3s ease; }
+
+  /* Map Container & HUD — PURE NATIVE DARK MAP (NO HUE-ROTATE / INVERT FILTER HACK) */
+  .map-container-card {
+    position: relative;
+    border: 1px solid rgba(0, 243, 255, 0.2) !important;
+    border-radius: 18px !important;
+    background: rgba(6, 12, 24, 0.85) !important;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    overflow: hidden;
+  }
+  #map {
+    width: 100%;
+    height: 100%;
+    background: #060b14;
+    filter: none !important; /* CRITICAL: Clean native dark tiles without color-distorting filters */
+  }
+
+  .map-hud-top {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hud-badge, .map-hud-pill {
+    background: rgba(8, 16, 32, 0.78) !important;
+    backdrop-filter: blur(12px) saturate(170%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(170%) !important;
+    border: 1px solid rgba(0, 243, 255, 0.22) !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    color: #b9d0ec;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 11px;
+  }
+  .hud-badge i { color: var(--neon-amber); margin-right: 5px; }
+  .hud-badge strong { color: #f2f7fd; }
+
+  .map-hud-controls {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .map-ctrl-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(8, 16, 32, 0.8) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(0, 243, 255, 0.22) !important;
+    color: #b0c6e2;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: all 0.2s ease;
+  }
+  .map-ctrl-btn:hover {
+    color: #00f3ff;
+    border-color: rgba(0, 243, 255, 0.55);
+    background: rgba(0, 243, 255, 0.15) !important;
+    box-shadow: 0 0 16px rgba(0, 243, 255, 0.3);
+    transform: scale(1.05);
+  }
+
+  .map-hud-bottom {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .map-hud-pill {
+    font-size: 10.5px;
+    font-family: var(--font-mono);
+  }
+  .map-hud-pill span { color: #00f3ff; font-weight: 600; }
+
+  /* Live Route Legend with Frosted Glass */
+  .route-legend-card {
+    margin-top: 22px;
+    padding: 22px 24px;
+    border: 1px solid rgba(0, 243, 255, 0.18);
+    border-radius: 16px;
+    background: rgba(10, 18, 33, 0.72) !important;
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+  .legend-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .legend-eyebrow {
+    display: block;
+    font-size: 10px;
+    color: var(--neon-cyan);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .legend-heading h2 {
+    color: #edf5ff;
+    font-size: 17px;
+    margin: 0;
+  }
+  .legend-live {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #a4bad5;
+    font-size: 11px;
+  }
+  .legend-live span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00ff9d;
+    box-shadow: 0 0 8px #00ff9d;
+  }
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .legend-item {
+    display: flex;
+    gap: 12px;
+    padding: 13px;
+    border: 1px solid rgba(0, 243, 255, 0.12);
+    border-radius: 12px;
+    background: rgba(6, 12, 24, 0.55);
+    backdrop-filter: blur(8px);
+  }
+  .legend-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .depot-icon { background: rgba(245, 183, 66, 0.14); color: #f5b742; }
+  .stop-icon { background: rgba(0, 243, 255, 0.14); color: #00f3ff; }
+  .route-icon { background: rgba(164, 118, 255, 0.14); color: #a476ff; }
+  .graph-icon { background: rgba(0, 255, 157, 0.14); color: #00ff9d; }
+  .legend-item strong { display: block; color: #e4f0fc; font-size: 12px; margin-bottom: 3px; }
+  .legend-item p { margin: 0; color: #8fa5c2; font-size: 10.5px; line-height: 1.4; }
+
+  /* Summary Stat Cards */
+  .stat-grid-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card-hud {
+    background: rgba(6, 13, 26, 0.65) !important;
+    border: 1px solid rgba(0, 243, 255, 0.14) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+  .stat-card-hud.cyan { border-top: 3px solid #00f3ff !important; }
+  .stat-card-hud.amber { border-top: 3px solid #f5b742 !important; }
+  .stat-card-hud.win { border-top: 3px solid #00ff9d !important; }
+  .stat-card-hud.purple { border-top: 3px solid #a476ff !important; }
+  .stat-val-big {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f3f8fe;
+    font-family: var(--font-mono);
+  }
+  .stat-lbl-sub {
+    font-size: 9px;
+    color: #8da4c0;
+    margin-top: 3px;
+  }
+
+  /* Route Table */
+  .route-table-wrap {
+    border: 1px solid rgba(0, 243, 255, 0.14);
+    border-radius: 12px;
+    overflow: auto;
+    background: rgba(6, 12, 24, 0.6);
+    backdrop-filter: blur(10px);
+  }
+  .cyber-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
+  .cyber-table th {
+    background: rgba(8, 16, 32, 0.85);
+    border-bottom: 1px solid rgba(0, 243, 255, 0.15);
+    color: #8fa5c2;
+    padding: 9px 12px;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+  }
+  .cyber-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(0, 243, 255, 0.08);
+    color: #c4d7ee;
+  }
+
+  /* Modals & Popups */
+  .modal-card, .aria-panel-popup {
+    background: rgba(8, 16, 32, 0.88) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(0, 243, 255, 0.28) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(0, 243, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  }
+
+  @media(max-width: 900px) {
+    .layout-grid { grid-template-columns: 1fr; padding: 14px; }
+    .layout-grid > .column:first-child, .center-column { grid-column: 1; }
+    .center-column .map-container-card { height: 520px; }
+    .layout-grid > .column:last-child { grid-column: 1; grid-template-columns: 1fr; }
+    .legend-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media(max-width: 560px) {
+    .legend-grid { grid-template-columns: 1fr; }
+    .topbar-center { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -1241,12 +1737,12 @@
     <div class="badge-chip">
       <i class="fas fa-microchip"></i> PS 26137
     </div>
-    <div class="badge-chip">
-      <i class="fas fa-route"></i> Delhi delivery network
+    <div class="badge-chip" id="topbarCityBadge">
+      <i class="fas fa-city"></i> <span id="topbarCityName">Delhi NCR</span>
     </div>
     <div class="badge-chip pulse-chip" id="solverModeBadge">
       <div class="pulse-dot-green"></div>
-      <span id="backendStatusText">SYSTEM ONLINE</span>
+      <span id="backendStatusText">CHECKING SOLVER...</span>
     </div>
     <div class="badge-chip" id="clockBadge">
       <i class="far fa-clock"></i> 00:00:00 UTC
@@ -1273,7 +1769,26 @@
     <div class="cyber-panel">
       <div class="panel-header">
         <span class="panel-title"><i class="fas fa-map-location-dot"></i> Delivery scenario</span>
-        <span class="panel-tag">Delhi Metro</span>
+        <span class="panel-tag" id="activeCityTag">Delhi NCR</span>
+      </div>
+
+      <!-- City Selector Grid -->
+      <div class="field-box" style="margin-bottom: 12px;">
+        <div class="field-label-row">
+          <span class="field-label"><i class="fas fa-city"></i> Operating City</span>
+          <span class="field-val-badge" id="cityBadgeVal">DELHI</span>
+        </div>
+        <div class="city-selector-grid">
+          <button type="button" class="city-pill-btn active" data-city="delhi" id="cityBtn-delhi">
+            <i class="fas fa-monument"></i> Delhi
+          </button>
+          <button type="button" class="city-pill-btn" data-city="mumbai" id="cityBtn-mumbai">
+            <i class="fas fa-water"></i> Mumbai
+          </button>
+          <button type="button" class="city-pill-btn" data-city="kolkata" id="cityBtn-kolkata">
+            <i class="fas fa-archway"></i> Kolkata
+          </button>
+        </div>
       </div>
 
       <div class="field-box">
@@ -1366,8 +1881,8 @@
       <div class="scanning-laser" id="scanningLaser"></div>
       
       <div class="map-hud-top">
-        <div class="hud-badge">
-          <i class="fas fa-warehouse"></i> Central Depot: <strong>Connaught Place</strong>
+        <div class="hud-badge" id="hudDepotBadge">
+          <i class="fas fa-warehouse"></i> Central Depot: <strong id="hudDepotName">Connaught Place, Delhi</strong>
         </div>
         <div class="hud-badge" id="hudActiveStops">
           Stops: <strong>14</strong>
@@ -1375,7 +1890,10 @@
       </div>
 
       <div class="map-hud-controls">
+        <button class="map-ctrl-btn" id="zoomInBtn" title="Zoom In"><i class="fas fa-plus"></i></button>
+        <button class="map-ctrl-btn" id="zoomOutBtn" title="Zoom Out"><i class="fas fa-minus"></i></button>
         <button class="map-ctrl-btn" id="centerMapBtn" title="Center Depot"><i class="fas fa-crosshairs"></i></button>
+        <button class="map-ctrl-btn" id="toggleMapStyleBtn" title="Switch Basemap (Dark/Streets/Satellite)"><i class="fas fa-layer-group"></i></button>
         <button class="map-ctrl-btn" id="toggleLaserBtn" title="Toggle Radar Laser"><i class="fas fa-radar"></i></button>
         <button class="map-ctrl-btn" id="fullscreenBtn" title="Toggle Fullscreen"><i class="fas fa-expand"></i></button>
       </div>
@@ -1386,8 +1904,8 @@
         <div class="map-hud-pill">
           Coordinates: <span id="mapCoords">28.6315° N, 77.2167° E</span>
         </div>
-        <div class="map-hud-pill">
-          Tiles: <span>CARTO DarkMatter & OpenStreetMap</span>
+        <div class="map-hud-pill" id="mapTilePill" style="cursor: pointer;" title="Click to cycle tile provider">
+          Tiles: <span id="mapTileLabel">CARTO DarkMatter</span>
         </div>
       </div>
     </div>
@@ -1662,15 +2180,60 @@ function animateBackground() {
 animateBackground();
 
 /* ============================================================
-   CORE GEOSPATIAL & OPTIMIZATION CONFIG
+   MULTI-CITY GEOSPATIAL & OPTIMIZATION CONFIG
    ============================================================ */
-const DEPOT = { lat: 28.6315, lng: 77.2167 }; // Connaught Place, Delhi
-const VEHICLE_COLORS = ['#2267d8', '#e99422', '#1a9b68', '#7158d9', '#d94d5c', '#159e9a', '#b95791', '#4d8bea'];
-const HOTSPOTS = [
-  { name: 'Downtown Core', lat: 28.6280, lng: 77.2200, radius: 0.02, phase: 0.0 },
-  { name: 'Airport Junction', lat: 28.6450, lng: 77.1900, radius: 0.018, phase: 1.4 },
-  { name: 'University District', lat: 28.6150, lng: 77.2350, radius: 0.016, phase: 2.8 },
-];
+const CITIES = {
+  delhi: {
+    id: 'delhi',
+    name: 'Delhi NCR',
+    label: 'Delhi Metro',
+    center: [28.6315, 77.2167],
+    zoom: 12,
+    depot: { id: 0, lat: 28.6315, lng: 77.2167, name: 'Connaught Place, Delhi' },
+    hotspots: [
+      { name: 'Downtown Core', lat: 28.6280, lng: 77.2200, radius: 0.020, phase: 0.0 },
+      { name: 'Airport Junction', lat: 28.6450, lng: 77.1900, radius: 0.018, phase: 1.4 },
+      { name: 'University District', lat: 28.6150, lng: 77.2350, radius: 0.016, phase: 2.8 },
+    ],
+    latRange: 0.045,
+    lngRange: 0.055,
+  },
+  mumbai: {
+    id: 'mumbai',
+    name: 'Mumbai Metropolitan',
+    label: 'Mumbai Region',
+    center: [19.0662, 72.8687],
+    zoom: 12,
+    depot: { id: 0, lat: 19.0662, lng: 72.8687, name: 'BKC (Bandra Kurla Complex), Mumbai' },
+    hotspots: [
+      { name: 'Lower Parel Hub', lat: 18.9950, lng: 72.8300, radius: 0.022, phase: 0.0 },
+      { name: 'Western Express / Andheri', lat: 19.1190, lng: 72.8465, radius: 0.025, phase: 1.2 },
+      { name: 'Navi Mumbai Corridor', lat: 19.0770, lng: 72.9980, radius: 0.025, phase: 2.6 },
+    ],
+    latRange: 0.050,
+    lngRange: 0.045,
+  },
+  kolkata: {
+    id: 'kolkata',
+    name: 'Kolkata Metro',
+    label: 'Kolkata Region',
+    center: [22.5726, 88.3639],
+    zoom: 12,
+    depot: { id: 0, lat: 22.5726, lng: 88.3639, name: 'BBD Bagh, Kolkata' },
+    hotspots: [
+      { name: 'Salt Lake Sector V', lat: 22.5800, lng: 88.4350, radius: 0.022, phase: 0.0 },
+      { name: 'Howrah Interchange', lat: 22.5850, lng: 88.3470, radius: 0.018, phase: 1.5 },
+      { name: 'South Kolkata Gariahat', lat: 22.5180, lng: 88.3650, radius: 0.020, phase: 2.7 },
+    ],
+    latRange: 0.045,
+    lngRange: 0.050,
+  }
+};
+
+let currentCityId = 'delhi';
+let DEPOT = CITIES.delhi.depot;
+let HOTSPOTS = CITIES.delhi.hotspots;
+const VEHICLE_COLORS = ['#00f3ff', '#f5b742', '#00ff9d', '#a476ff', '#ff3366', '#0099ff', '#e066ff', '#ff9900'];
 
 let customers = [];
 let capacity = 32;
@@ -1679,40 +2242,182 @@ let convChart;
 let running = false;
 let congestionSnapshot = null;
 
-const API_BASE = '';
+/* ============================================================
+   HIGH PERFORMANCE TILE SYSTEM (CARTO DarkMatter & Fallbacks)
+   ============================================================ */
+const TILE_PROVIDERS = {
+  dark: {
+    name: 'CARTO DarkMatter',
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    options: {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }
+  },
+  streets: {
+    name: 'CARTO Voyager',
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    options: {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }
+  },
+  satellite: {
+    name: 'Esri Satellite',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    options: {
+      attribution: '&copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+      maxZoom: 19
+    }
+  }
+};
 
+let currentTileKey = 'dark';
+let activeTileLayer = null;
+
+function setTileLayer(key) {
+  const conf = TILE_PROVIDERS[key] || TILE_PROVIDERS.dark;
+  currentTileKey = key;
+  if (activeTileLayer && map) {
+    map.removeLayer(activeTileLayer);
+  }
+  activeTileLayer = L.tileLayer(conf.url, conf.options).addTo(map);
+
+  activeTileLayer.on('tileerror', function() {
+    console.warn(`Tile provider [${conf.name}] warning: continuing gracefully.`);
+  });
+
+  const tileLabel = document.getElementById('mapTileLabel');
+  if (tileLabel) tileLabel.textContent = conf.name;
+}
+
+function cycleTileLayer() {
+  const keys = Object.keys(TILE_PROVIDERS);
+  const nextIdx = (keys.indexOf(currentTileKey) + 1) % keys.length;
+  setTileLayer(keys[nextIdx]);
+  playBeep(740, 'triangle', 0.08);
+}
+
+/* ============================================================
+   UNIVERSAL DEVICE API_BASE RESOLUTION
+   ============================================================ */
+function getApiBase() {
+  // 1. Check for manual URL query parameter (?api=https://my-backend.app)
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('api')) {
+    return params.get('api').replace(/\/$/, '');
+  }
+
+  // 2. Opened directly via file protocol (file:///)
+  if (window.location.protocol === 'file:') {
+    return 'http://127.0.0.1:8000';
+  }
+
+  // 3. Opened via dev server on other port (e.g., Live Server on 5500, Vite on 5173, etc.)
+  // Uses hostname so mobile phones / LAN tablets accessing http://192.168.x.x:5500 connect to backend on port 8000!
+  if (window.location.port && window.location.port !== '8000') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+
+  // 4. Production or served directly by FastAPI on port 8000 (relative path)
+  return '';
+}
+
+const API_BASE = getApiBase();
+
+async function checkBackendHealth() {
+  const badge = document.getElementById('backendStatusText');
+  const dot = document.querySelector('#solverModeBadge .pulse-dot-green');
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1200);
+    const res = await fetch(`${API_BASE}/api/health`, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      if (badge) badge.textContent = 'FASTAPI ENGINE ONLINE';
+      if (dot) dot.style.background = 'var(--neon-green)';
+      return true;
+    }
+  } catch (e) {}
+  if (badge) badge.textContent = 'CLIENT QUANTUM ENGINE';
+  if (dot) dot.style.background = 'var(--neon-cyan)';
+  return false;
+}
+
+/* ============================================================
+   MAP INITIALIZATION & CONTROLS
+   ============================================================ */
 function initMap() {
-  map = L.map('map', { zoomControl: false }).setView([DEPOT.lat, DEPOT.lng], 12);
+  map = L.map('map', { zoomControl: false }).setView(CITIES[currentCityId].center, CITIES[currentCityId].zoom);
   
-  // OpenStreetMap standard tiles: no API key is needed for normal interactive use.
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19
-  }).addTo(map);
+  // Set CARTO DarkMatter as primary high-performance dark basemap
+  setTileLayer('dark');
 
   // Custom Neon Depot Marker
   const depotIcon = L.divIcon({
     className: 'depot-custom-marker',
     html: `<div style="
-      width: 22px; height: 22px;
-      background: #f2b33d;
-      border: 3px solid #060913;
+      width: 24px; height: 24px;
+      background: #f5b742;
+      border: 3px solid #060b16;
       border-radius: 50%;
-      box-shadow: 0 0 15px #f2b33d, 0 0 30px rgba(242, 179, 61, 0.5);
+      box-shadow: 0 0 16px #f5b742, 0 0 32px rgba(245, 183, 66, 0.6);
       display: flex; align-items: center; justify-content: center;
-      color: #060913; font-size: 11px; font-weight: bold;
-    "><i class="fas fa-warehouse" style="font-size: 10px;"></i></div>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11]
+      color: #060b16; font-size: 11px; font-weight: bold;
+    "><i class="fas fa-warehouse" style="font-size: 11px;"></i></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
   });
 
   depotMarker = L.marker([DEPOT.lat, DEPOT.lng], { icon: depotIcon }).addTo(map)
-    .bindTooltip('<strong>Central Depot</strong><br>Connaught Place, Delhi', { permanent: false, direction: 'top' });
+    .bindTooltip(`<strong>Central Depot</strong><br>${DEPOT.name}`, { permanent: false, direction: 'top' });
 
-  // Map events
+  // Mouse coordinate telemetry
   map.on('mousemove', (e) => {
     document.getElementById('mapCoords').textContent = `${e.latlng.lat.toFixed(4)}° N, ${e.latlng.lng.toFixed(4)}° E`;
   });
+}
+
+/* ============================================================
+   MULTI-CITY CONTROLLER
+   ============================================================ */
+function switchCity(cityId) {
+  if (!CITIES[cityId]) return;
+  currentCityId = cityId;
+  const city = CITIES[cityId];
+  DEPOT = city.depot;
+  HOTSPOTS = city.hotspots;
+
+  // Update city buttons
+  document.querySelectorAll('.city-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.city === cityId);
+  });
+
+  // Update topbar badges and HUD labels
+  const topCity = document.getElementById('topbarCityName');
+  if (topCity) topCity.textContent = city.name;
+  const activeCityTag = document.getElementById('activeCityTag');
+  if (activeCityTag) activeCityTag.textContent = city.name;
+  const cityBadgeVal = document.getElementById('cityBadgeVal');
+  if (cityBadgeVal) cityBadgeVal.textContent = cityId.toUpperCase();
+  const hudDepot = document.getElementById('hudDepotName');
+  if (hudDepot) hudDepot.textContent = DEPOT.name;
+
+  // Smooth map flight transition
+  map.flyTo(city.center, city.zoom, { duration: 1.2 });
+  depotMarker.setLatLng([DEPOT.lat, DEPOT.lng]);
+  depotMarker.setTooltipContent(`<strong>Central Depot</strong><br>${DEPOT.name}`);
+
+  // Re-render zones for the selected city
+  renderZones();
+
+  // Generate fresh delivery points in the new city
+  const n = parseInt(document.getElementById('custSlider').value) || 14;
+  genInstance(n);
+
+  playBeep(660, 'sine', 0.1);
 }
 
 /* ============================================================
@@ -1720,13 +2425,15 @@ function initMap() {
    ============================================================ */
 function genInstance(n) {
   customers = [];
+  const city = CITIES[currentCityId];
   for (let i = 0; i < n; i++) {
     const ang = Math.random() * Math.PI * 2;
-    const r = 0.015 + Math.random() * 0.045;
+    const rLat = (0.012 + Math.random() * 0.038) * (city.latRange / 0.045);
+    const rLng = (0.012 + Math.random() * 0.045) * (city.lngRange / 0.055);
     customers.push({
       id: i + 1,
-      lat: DEPOT.lat + r * Math.sin(ang),
-      lng: DEPOT.lng + r * Math.cos(ang) * 1.15,
+      lat: DEPOT.lat + rLat * Math.sin(ang),
+      lng: DEPOT.lng + rLng * Math.cos(ang),
       demand: 4 + Math.floor(Math.random() * 7)
     });
   }
@@ -1744,16 +2451,16 @@ function drawCustomers() {
     const custIcon = L.divIcon({
       className: 'cust-custom-marker',
       html: `<div style="
-        width: 18px; height: 18px;
-        background: rgba(10, 16, 31, 0.9);
+        width: 20px; height: 20px;
+        background: rgba(6, 12, 24, 0.88);
         border: 2px solid #00f3ff;
         border-radius: 50%;
-        box-shadow: 0 0 8px rgba(0, 243, 255, 0.4);
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.45);
         display: flex; align-items: center; justify-content: center;
         color: #00f3ff; font-size: 9px; font-family: var(--font-mono); font-weight: 700;
       ">${c.id}</div>`,
-      iconSize: [18, 18],
-      iconAnchor: [9, 9]
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
     });
 
     const m = L.marker([c.lat, c.lng], { icon: custIcon }).addTo(map)
@@ -1807,29 +2514,24 @@ function congestionPenalty(midpoint, snapshot) {
 function takeCongestionSnapshot() {
   const t = performance.now() / 1000;
   return HOTSPOTS.map(h => ({
+    name: h.name,
     lat: h.lat,
     lng: h.lng,
     radiusKm: h.radius * 111,
-    intensity: 40 + 45 * Math.abs(Math.sin(t * 0.15 + h.phase))
+    intensity: Math.round(40 + 45 * Math.abs(Math.sin(t * 0.15 + h.phase)))
   }));
 }
 
-// PHASE 2 CHANGE: the backend zips its congestion list positionally against
-// HOTSPOTS and expects {name, intensity} — our local snapshot carries
-// {lat, lng, radiusKm, intensity} instead. Convert before sending so a
-// backend run actually optimizes against the same traffic state the zone
-// bars are showing, rather than the server generating its own snapshot at
-// a different instant.
 function toBackendCongestion(snapshot) {
   return HOTSPOTS.map((h, i) => ({ name: h.name, intensity: snapshot[i].intensity }));
 }
 
 function edgeCost(a, b, snapshot) {
   const mid = { lat: (a.lat + b.lat) / 2, lng: (a.lng + b.lng) / 2 };
-  return distKm(a, b) * congestionPenalty(mid, snapshot);
+  return distKm(a, b) * 1.15 * congestionPenalty(mid, snapshot);
 }
 
-// Split tour with Capacity constraint (Prins Split algorithm)
+// Split tour with Capacity constraint (Prins Split DP algorithm)
 function splitTour(order, snapshot) {
   const n = order.length;
   const V = new Array(n + 1).fill(Infinity);
@@ -1975,7 +2677,7 @@ function initChart() {
         {
           label: 'Classical PSO',
           data: [],
-          borderColor: '#9b7ede',
+          borderColor: '#a476ff',
           backgroundColor: 'transparent',
           borderWidth: 1.8,
           borderDash: [4, 4],
@@ -1991,12 +2693,12 @@ function initChart() {
       plugins: {
         legend: {
           labels: {
-            color: '#94a3b8',
+            color: '#9db0ca',
             font: { family: 'IBM Plex Mono', size: 10 }
           }
         },
         tooltip: {
-          backgroundColor: 'rgba(6, 9, 19, 0.92)',
+          backgroundColor: 'rgba(6, 12, 24, 0.94)',
           titleColor: '#00f3ff',
           bodyColor: '#ffffff',
           borderColor: '#00f3ff',
@@ -2006,11 +2708,11 @@ function initChart() {
       },
       scales: {
         x: {
-          ticks: { color: '#64748b', maxTicksLimit: 6, font: { family: 'IBM Plex Mono', size: 9 } },
+          ticks: { color: '#6b7f99', maxTicksLimit: 6, font: { family: 'IBM Plex Mono', size: 9 } },
           grid: { color: 'rgba(255, 255, 255, 0.05)' }
         },
         y: {
-          ticks: { color: '#64748b', font: { family: 'IBM Plex Mono', size: 9 } },
+          ticks: { color: '#6b7f99', font: { family: 'IBM Plex Mono', size: 9 } },
           grid: { color: 'rgba(255, 255, 255, 0.05)' }
         }
       }
@@ -2019,7 +2721,7 @@ function initChart() {
 }
 
 /* ============================================================
-   EXECUTION & BENCHMARKING
+   EXECUTION & BENCHMARKING (Universal Cross-Device)
    ============================================================ */
 async function runOptimization(alsoCompare = false) {
   if (running) return;
@@ -2041,49 +2743,59 @@ async function runOptimization(alsoCompare = false) {
   let nnResult = null;
 
   try {
-    // Attempt FastAPI backend if available
     const reqBody = {
       customers: customers.map(c => ({ id: c.id, lat: c.lat, lng: c.lng, demand: c.demand })),
       capacity,
       iterations,
       particles: particlesCount,
       seed: 42,
-      congestion: toBackendCongestion(snap)
+      congestion: toBackendCongestion(snap),
+      city: currentCityId
     };
 
-    const backendPromise = fetch(`${API_BASE}/api/optimize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...reqBody, algorithm: 'qpso' })
-    }).then(res => res.ok ? res.json() : Promise.reject());
-
-    // 1.5s timeout for backend, otherwise fallback seamlessly to local JS engine
-    const res = await Promise.race([
-      backendPromise,
-      new Promise((_, rej) => setTimeout(() => rej('timeout'), 1200))
-    ]).catch(() => null);
-
-    if (res && res.routes) {
-      qpsoResult = res;
-      document.getElementById('backendStatusText').textContent = 'FASTAPI ENGINE CONNECTED';
-      const nnRes = await fetch(`${API_BASE}/api/optimize`, {
+    let usedBackend = false;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const res = await fetch(`${API_BASE}/api/optimize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...reqBody, algorithm: 'nearest_neighbor' })
-      }).then(r => r.json()).catch(() => runNearestNeighbor(snap));
-      nnResult = nnRes;
+        body: JSON.stringify({ ...reqBody, algorithm: 'qpso' }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
 
-      if (alsoCompare) {
-        document.getElementById('statusText').textContent = 'Benchmarking — Classical PSO Baseline...';
-        psoResult = await fetch(`${API_BASE}/api/optimize`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...reqBody, algorithm: 'pso' })
-        }).then(r => r.json()).catch(() => solveClientSwarm('pso', iterations, particlesCount, snap));
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.routes) {
+          qpsoResult = data;
+          usedBackend = true;
+          document.getElementById('backendStatusText').textContent = 'FASTAPI ENGINE ONLINE';
+
+          const nnRes = await fetch(`${API_BASE}/api/optimize`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...reqBody, algorithm: 'nearest_neighbor' })
+          }).then(r => r.json()).catch(() => runNearestNeighbor(snap));
+          nnResult = nnRes;
+
+          if (alsoCompare) {
+            document.getElementById('statusText').textContent = 'Benchmarking — Classical PSO Baseline...';
+            psoResult = await fetch(`${API_BASE}/api/optimize`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ...reqBody, algorithm: 'pso' })
+            }).then(r => r.json()).catch(() => solveClientSwarm('pso', iterations, particlesCount, snap));
+          }
+        }
       }
-    } else {
-      // Local client-side Quantum execution
-      document.getElementById('backendStatusText').textContent = 'LOCAL QUANTUM ENGINE';
+    } catch (backendErr) {
+      // Backend unavailable or timed out: fall through to client engine seamlessly
+    }
+
+    if (!usedBackend) {
+      // Client-side Quantum execution (Works 100% offline and on all mobile devices!)
+      document.getElementById('backendStatusText').textContent = 'CLIENT QUANTUM ENGINE';
       qpsoResult = solveClientSwarm('qpso', iterations, particlesCount, snap);
       nnResult = runNearestNeighbor(snap);
       if (alsoCompare) {
@@ -2097,7 +2809,7 @@ async function runOptimization(alsoCompare = false) {
     renderTable(qpsoResult.routes);
 
     document.getElementById('statusDot').className = 'radar-dot done';
-    document.getElementById('statusText').textContent = 'Optimal CVRP routes converged';
+    document.getElementById('statusText').textContent = `Optimal CVRP routes converged (${CITIES[currentCityId].name})`;
     playBeep(980, 'sine', 0.2);
 
   } catch (err) {
@@ -2133,7 +2845,7 @@ function drawRoutes(routes) {
     const line = L.polyline(pts, {
       color: color,
       weight: 3.5,
-      opacity: 0.9,
+      opacity: 0.95,
       lineCap: 'round',
       lineJoin: 'round',
       dashArray: null
@@ -2142,7 +2854,7 @@ function drawRoutes(routes) {
     routeLines.push(line);
   });
 
-  // Re-render markers colored by vehicle
+  // Re-render markers colored by vehicle assignment
   customerMarkers.forEach(m => map.removeLayer(m));
   customerMarkers = [];
   routes.forEach((route, idx) => {
@@ -2152,16 +2864,16 @@ function drawRoutes(routes) {
       const custIcon = L.divIcon({
         className: 'cust-custom-marker',
         html: `<div style="
-          width: 20px; height: 20px;
-          background: #060913;
+          width: 22px; height: 22px;
+          background: #060b16;
           border: 2px solid ${color};
           border-radius: 50%;
-          box-shadow: 0 0 10px ${color};
+          box-shadow: 0 0 12px ${color};
           display: flex; align-items: center; justify-content: center;
           color: ${color}; font-size: 10px; font-family: var(--font-mono); font-weight: 700;
         ">${id}</div>`,
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
       });
 
       const m = L.marker([c.lat, c.lng], { icon: custIcon }).addTo(map)
@@ -2266,16 +2978,18 @@ const ariaSendBtn = document.getElementById('ariaSendBtn');
 const ariaMessages = document.getElementById('ariaMessages');
 
 function toggleAria() {
+  if (!ariaPanel) return;
   const isShown = ariaPanel.style.display === 'flex';
   ariaPanel.style.display = isShown ? 'none' : 'flex';
   playBeep(640, 'triangle', 0.08);
-  if (!isShown) ariaInput.focus();
+  if (!isShown && ariaInput) ariaInput.focus();
 }
 
-ariaToggleBtn.addEventListener('click', toggleAria);
-ariaCloseBtn.addEventListener('click', toggleAria);
+if (ariaToggleBtn) ariaToggleBtn.addEventListener('click', toggleAria);
+if (ariaCloseBtn) ariaCloseBtn.addEventListener('click', toggleAria);
 
 function addAriaMessage(text, isUser = false) {
+  if (!ariaMessages) return;
   const div = document.createElement('div');
   div.className = `aria-msg ${isUser ? 'user' : 'bot'}`;
   div.innerHTML = text;
@@ -2288,38 +3002,49 @@ function handleAriaCommand(text) {
   addAriaMessage(text, true);
 
   setTimeout(() => {
-    if (cmd.includes('optimize') || cmd.includes('run') || cmd.includes('qpso')) {
-      addAriaMessage("Executing Quantum Particle Swarm Optimization across current network stops...");
+    if (cmd.includes('mumbai')) {
+      switchCity('mumbai');
+      addAriaMessage("Switched operational sector to <strong>Mumbai Metropolitan</strong> (BKC Depot).");
+    } else if (cmd.includes('kolkata')) {
+      switchCity('kolkata');
+      addAriaMessage("Switched operational sector to <strong>Kolkata Metro</strong> (BBD Bagh Depot).");
+    } else if (cmd.includes('delhi')) {
+      switchCity('delhi');
+      addAriaMessage("Switched operational sector to <strong>Delhi NCR</strong> (Connaught Place Depot).");
+    } else if (cmd.includes('optimize') || cmd.includes('run') || cmd.includes('qpso')) {
+      addAriaMessage(`Executing Quantum Particle Swarm Optimization for ${CITIES[currentCityId].name}...`);
       runOptimization(false);
     } else if (cmd.includes('benchmark') || cmd.includes('compare')) {
-      addAriaMessage("Running dual benchmark: QPSO vs Classical PSO & Nearest-Neighbor greedy baseline...");
+      addAriaMessage(`Running dual benchmark: QPSO vs Classical PSO & Nearest-Neighbor in ${CITIES[currentCityId].name}...`);
       runOptimization(true);
     } else if (cmd.includes('rescan') || cmd.includes('new') || cmd.includes('scan')) {
       const n = parseInt(document.getElementById('custSlider').value);
       genInstance(n);
-      addAriaMessage(`Generated fresh geospatial instance with ${n} delivery points and randomized demands.`);
+      addAriaMessage(`Generated fresh geospatial instance with ${n} delivery points in ${CITIES[currentCityId].name}.`);
     } else if (cmd.includes('formulation') || cmd.includes('math')) {
       document.getElementById('formulationModal').style.display = 'flex';
       addAriaMessage("Displaying mathematical formulation modal for CVRP & QPSO mechanics.");
     } else {
-      addAriaMessage(`Telemetry acknowledged. You can say <strong>"optimize"</strong>, <strong>"benchmark"</strong>, or <strong>"re-scan"</strong>.`);
+      addAriaMessage(`Telemetry acknowledged. You can say <strong>"optimize"</strong>, <strong>"switch to Mumbai"</strong>, <strong>"switch to Kolkata"</strong>, or <strong>"benchmark"</strong>.`);
     }
   }, 350);
 }
 
-ariaSendBtn.addEventListener('click', () => {
-  if (ariaInput.value.trim()) {
-    handleAriaCommand(ariaInput.value);
-    ariaInput.value = '';
-  }
-});
+if (ariaSendBtn && ariaInput) {
+  ariaSendBtn.addEventListener('click', () => {
+    if (ariaInput.value.trim()) {
+      handleAriaCommand(ariaInput.value);
+      ariaInput.value = '';
+    }
+  });
 
-ariaInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter' && ariaInput.value.trim()) {
-    handleAriaCommand(ariaInput.value);
-    ariaInput.value = '';
-  }
-});
+  ariaInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && ariaInput.value.trim()) {
+      handleAriaCommand(ariaInput.value);
+      ariaInput.value = '';
+    }
+  });
+}
 
 document.querySelectorAll('.chip-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -2338,28 +3063,45 @@ const formulationBtn = document.getElementById('formulationBtn');
 const formulationModal = document.getElementById('formulationModal');
 const modalCloseBtn = document.getElementById('modalCloseBtn');
 
-formulationBtn.addEventListener('click', () => {
-  formulationModal.style.display = 'flex';
-  playBeep(650, 'sine', 0.08);
-});
-modalCloseBtn.addEventListener('click', () => {
-  formulationModal.style.display = 'none';
-});
+if (formulationBtn && formulationModal) {
+  formulationBtn.addEventListener('click', () => {
+    formulationModal.style.display = 'flex';
+    playBeep(650, 'sine', 0.08);
+  });
+}
+if (modalCloseBtn && formulationModal) {
+  modalCloseBtn.addEventListener('click', () => {
+    formulationModal.style.display = 'none';
+  });
+}
 window.addEventListener('click', (e) => {
   if (e.target === formulationModal) formulationModal.style.display = 'none';
 });
 
 /* ============================================================
-   MAP CONTROLS (Center, Laser, Fullscreen)
+   MAP CONTROLS (Zoom In, Zoom Out, Center, Layer Switch, Laser, Fullscreen)
    ============================================================ */
+document.getElementById('zoomInBtn').addEventListener('click', () => {
+  if (map) map.zoomIn();
+  playBeep(700, 'sine', 0.05);
+});
+
+document.getElementById('zoomOutBtn').addEventListener('click', () => {
+  if (map) map.zoomOut();
+  playBeep(600, 'sine', 0.05);
+});
+
 document.getElementById('centerMapBtn').addEventListener('click', () => {
-  map.setView([DEPOT.lat, DEPOT.lng], 12);
+  if (map) map.setView([DEPOT.lat, DEPOT.lng], CITIES[currentCityId].zoom);
   playBeep(720, 'sine', 0.06);
 });
 
+document.getElementById('toggleMapStyleBtn').addEventListener('click', cycleTileLayer);
+document.getElementById('mapTilePill').addEventListener('click', cycleTileLayer);
+
 document.getElementById('toggleLaserBtn').addEventListener('click', () => {
   const laser = document.getElementById('scanningLaser');
-  laser.classList.toggle('active');
+  if (laser) laser.classList.toggle('active');
   playBeep(800, 'sine', 0.06);
 });
 
@@ -2369,6 +3111,15 @@ document.getElementById('fullscreenBtn').addEventListener('click', () => {
   } else if (document.exitFullscreen) {
     document.exitFullscreen();
   }
+});
+
+/* ============================================================
+   CITY SELECTOR BUTTONS
+   ============================================================ */
+document.querySelectorAll('.city-pill-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    switchCity(btn.dataset.city);
+  });
 });
 
 /* ============================================================
@@ -2396,6 +3147,8 @@ renderZones();
 capacity = parseInt(document.getElementById('capSlider').value);
 genInstance(parseInt(document.getElementById('custSlider').value));
 tickClock();
+checkBackendHealth();
 </script>
 </body>
 </html>
+

@@ -9,13 +9,80 @@ import time
 from typing import Dict, Hashable, List, Mapping, Optional, Sequence, Tuple
 
 
-DEPOT = {"id": 0, "lat": 28.6315, "lng": 77.2167, "name": "Depot — Connaught Place"}
+CITIES: Dict[str, Dict] = {
+    "delhi": {
+        "id": "delhi",
+        "name": "Delhi NCR",
+        "label": "Delhi Metro",
+        "center": [28.6315, 77.2167],
+        "zoom": 12,
+        "depot": {"id": 0, "lat": 28.6315, "lng": 77.2167, "name": "Central Depot — Connaught Place, Delhi"},
+        "hotspots": [
+            {"name": "Downtown Core", "lat": 28.6280, "lng": 77.2200, "radius": 0.020, "phase": 0.0},
+            {"name": "Airport Junction", "lat": 28.6450, "lng": 77.1900, "radius": 0.018, "phase": 1.4},
+            {"name": "University District", "lat": 28.6150, "lng": 77.2350, "radius": 0.016, "phase": 2.8},
+        ],
+        "lat_range": 0.045,
+        "lng_range": 0.055,
+    },
+    "mumbai": {
+        "id": "mumbai",
+        "name": "Mumbai Metropolitan",
+        "label": "Mumbai Region",
+        "center": [19.0662, 72.8687],
+        "zoom": 12,
+        "depot": {"id": 0, "lat": 19.0662, "lng": 72.8687, "name": "Central Depot — BKC (Bandra Kurla Complex), Mumbai"},
+        "hotspots": [
+            {"name": "Lower Parel Hub", "lat": 18.9950, "lng": 72.8300, "radius": 0.022, "phase": 0.0},
+            {"name": "Western Express / Andheri", "lat": 19.1190, "lng": 72.8465, "radius": 0.025, "phase": 1.2},
+            {"name": "Navi Mumbai Vashi Corridor", "lat": 19.0770, "lng": 72.9980, "radius": 0.025, "phase": 2.6},
+        ],
+        "lat_range": 0.050,
+        "lng_range": 0.045,
+    },
+    "kolkata": {
+        "id": "kolkata",
+        "name": "Kolkata Metro",
+        "label": "Kolkata Region",
+        "center": [22.5726, 88.3639],
+        "zoom": 12,
+        "depot": {"id": 0, "lat": 22.5726, "lng": 88.3639, "name": "Central Depot — BBD Bagh, Kolkata"},
+        "hotspots": [
+            {"name": "Salt Lake Sector V", "lat": 22.5800, "lng": 88.4350, "radius": 0.022, "phase": 0.0},
+            {"name": "Howrah Interchange", "lat": 22.5850, "lng": 88.3470, "radius": 0.018, "phase": 1.5},
+            {"name": "South Kolkata Gariahat", "lat": 22.5180, "lng": 88.3650, "radius": 0.020, "phase": 2.7},
+        ],
+        "lat_range": 0.045,
+        "lng_range": 0.050,
+    },
+}
 
-HOTSPOTS = [
-    {"name": "Downtown Core", "lat": 28.6280, "lng": 77.2200, "radius": 0.02, "phase": 0.0},
-    {"name": "Airport Junction", "lat": 28.6450, "lng": 77.1900, "radius": 0.018, "phase": 1.4},
-    {"name": "University District", "lat": 28.6150, "lng": 77.2350, "radius": 0.016, "phase": 2.8},
-]
+DEFAULT_CITY = "delhi"
+DEPOT = CITIES[DEFAULT_CITY]["depot"]
+HOTSPOTS = CITIES[DEFAULT_CITY]["hotspots"]
+
+
+def get_city(city_id: Optional[str] = None) -> Dict:
+    """Retrieve city parameters with fallback to Delhi."""
+    if not city_id:
+        return CITIES[DEFAULT_CITY]
+    return CITIES.get(str(city_id).lower().strip(), CITIES[DEFAULT_CITY])
+
+
+def auto_detect_city(customers: Sequence[Dict]) -> str:
+    """Detect city based on centroid of customer coordinates."""
+    if not customers:
+        return DEFAULT_CITY
+    avg_lat = sum(c["lat"] for c in customers) / len(customers)
+    avg_lng = sum(c["lng"] for c in customers) / len(customers)
+    best_city = DEFAULT_CITY
+    best_dist = math.inf
+    for cid, cdata in CITIES.items():
+        d = math.hypot(avg_lat - cdata["center"][0], avg_lng - cdata["center"][1])
+        if d < best_dist:
+            best_dist = d
+            best_city = cid
+    return best_city
 
 
 # PHASE 1 CHANGE: This helper is used only to assign lengths while constructing
@@ -28,24 +95,29 @@ def _geographic_distance_km(a: Mapping, b: Mapping) -> float:
     return math.hypot(lat_km, lng_km)
 
 
-def congestion_snapshot(t: Optional[float] = None) -> List[Dict]:
+def congestion_snapshot(t: Optional[float] = None, city: Optional[str] = None, hotspots: Optional[Sequence[Dict]] = None) -> List[Dict]:
     now = time.time() if t is None else t
+    target_hotspots = hotspots if hotspots is not None else get_city(city)["hotspots"]
     return [
         {
             "name": h["name"],
             "intensity": 40 + 45 * abs(math.sin(now * 0.15 + h["phase"])),
         }
-        for h in HOTSPOTS
+        for h in target_hotspots
     ]
 
 
-def generate_customers(n: int, seed: Optional[int] = None) -> List[Dict]:
+def generate_customers(n: int, seed: Optional[int] = None, city: Optional[str] = None) -> List[Dict]:
     rng = random.Random(seed)
+    city_data = get_city(city)
+    depot = city_data["depot"]
+    lat_r = city_data["lat_range"]
+    lng_r = city_data["lng_range"]
     return [
         {
             "id": i + 1,
-            "lat": DEPOT["lat"] + rng.uniform(-0.045, 0.045),
-            "lng": DEPOT["lng"] + rng.uniform(-0.055, 0.055),
+            "lat": depot["lat"] + rng.uniform(-lat_r, lat_r),
+            "lng": depot["lng"] + rng.uniform(-lng_r, lng_r),
             "demand": rng.randint(4, 12),
         }
         for i in range(n)
@@ -61,19 +133,20 @@ def _customer_key(customer_id: int) -> str:
     return f"customer:{customer_id}"
 
 
-def node_map(customers: Sequence[Dict]) -> Dict[Hashable, Dict]:
-    nodes: Dict[Hashable, Dict] = {DEPOT_KEY: DEPOT}
+def node_map(customers: Sequence[Dict], depot: Optional[Dict] = None) -> Dict[Hashable, Dict]:
+    nodes: Dict[Hashable, Dict] = {DEPOT_KEY: depot if depot is not None else DEPOT}
     for customer in customers:
         nodes[_customer_key(customer["id"])] = customer
     return nodes
 
 
-def _hotspot_penalty(a: Mapping, b: Mapping, snapshot: Sequence[Dict], gamma: float) -> float:
+def _hotspot_penalty(a: Mapping, b: Mapping, snapshot: Sequence[Dict], gamma: float, hotspots: Optional[Sequence[Dict]] = None) -> float:
     """Traffic multiplier for one road segment, based on its midpoint."""
     mid_lat = (a["lat"] + b["lat"]) / 2
     mid_lng = (a["lng"] + b["lng"]) / 2
     penalty = 0.0
-    for hotspot, state in zip(HOTSPOTS, snapshot):
+    target_hotspots = hotspots if hotspots is not None else HOTSPOTS
+    for hotspot, state in zip(target_hotspots, snapshot):
         distance = math.hypot(mid_lat - hotspot["lat"], mid_lng - hotspot["lng"])
         if distance < hotspot["radius"]:
             penalty = max(
@@ -87,9 +160,13 @@ def _hotspot_penalty(a: Mapping, b: Mapping, snapshot: Sequence[Dict], gamma: fl
 # delivery locations. An MST guarantees connectivity; nearby extra links model
 # alternative roads. The 1.15 factor approximates road distance versus a direct line.
 def build_road_graph(
-    customers: Sequence[Dict], snapshot: Sequence[Dict], gamma: float = 0.85
+    customers: Sequence[Dict],
+    snapshot: Sequence[Dict],
+    gamma: float = 0.85,
+    depot: Optional[Dict] = None,
+    hotspots: Optional[Sequence[Dict]] = None,
 ) -> Dict[Hashable, List[Tuple[Hashable, float]]]:
-    nodes = node_map(customers)
+    nodes = node_map(customers, depot=depot)
     keys = list(nodes)
     graph: Dict[Hashable, List[Tuple[Hashable, float]]] = {key: [] for key in keys}
     if len(keys) < 2:
@@ -131,7 +208,7 @@ def build_road_graph(
     for edge in edges:
         left, right = tuple(edge)
         road_length = base_distance(left, right) * 1.15
-        traffic_weight = _hotspot_penalty(nodes[left], nodes[right], snapshot, gamma)
+        traffic_weight = _hotspot_penalty(nodes[left], nodes[right], snapshot, gamma, hotspots=hotspots)
         weight = road_length * traffic_weight
         graph[left].append((right, weight))
         graph[right].append((left, weight))
@@ -165,11 +242,16 @@ def build_distance_matrix(
     return {node: dijkstra(graph, node) for node in graph}
 
 
-def build_cost_matrix(customers: Sequence[Dict], snapshot: Sequence[Dict]) -> Dict[Hashable, Dict[Hashable, float]]:
+def build_cost_matrix(
+    customers: Sequence[Dict],
+    snapshot: Sequence[Dict],
+    depot: Optional[Dict] = None,
+    hotspots: Optional[Sequence[Dict]] = None,
+) -> Dict[Hashable, Dict[Hashable, float]]:
     """Public entry point so callers (e.g. /api/benchmark) can build the
     road-graph distance matrix once and reuse it across several solve() calls
     instead of rebuilding the graph + running Dijkstra from every node per algorithm."""
-    return build_distance_matrix(build_road_graph(customers, snapshot))
+    return build_distance_matrix(build_road_graph(customers, snapshot, depot=depot, hotspots=hotspots))
 
 
 # PHASE 2 CHANGE: The frontend's own congestion snapshot (produced by
@@ -178,14 +260,15 @@ def build_cost_matrix(customers: Sequence[Dict], snapshot: Sequence[Dict]) -> Di
 # — {name, intensity}, zipped positionally against HOTSPOTS. Normalize here
 # instead of trusting the caller, so a malformed/foreign-shaped snapshot falls
 # back to a freshly generated one rather than silently mis-pairing zones.
-def normalize_congestion(snapshot: Optional[Sequence[dict]]) -> List[Dict]:
-    if not snapshot or len(snapshot) != len(HOTSPOTS):
-        return congestion_snapshot()
+def normalize_congestion(snapshot: Optional[Sequence[dict]], hotspots: Optional[Sequence[Dict]] = None) -> List[Dict]:
+    target_hotspots = hotspots if hotspots is not None else HOTSPOTS
+    if not snapshot or len(snapshot) != len(target_hotspots):
+        return congestion_snapshot(hotspots=target_hotspots)
     normalized = []
-    for hotspot, entry in zip(HOTSPOTS, snapshot):
+    for hotspot, entry in zip(target_hotspots, snapshot):
         intensity = entry.get("intensity")
         if not isinstance(intensity, (int, float)):
-            return congestion_snapshot()
+            return congestion_snapshot(hotspots=target_hotspots)
         normalized.append({"name": hotspot["name"], "intensity": intensity})
     return normalized
 
@@ -203,10 +286,14 @@ def _edge_cost(matrix: Mapping[Hashable, Mapping[Hashable, float]], source: Hash
 # now runs the same DP so both engines score a given permutation identically
 # (mirrors splitTour() in fleetpath.html; keep the two in sync if either changes).
 def decode_random_key(
-    keys: Sequence[float], customers: Sequence[Dict], capacity: int, matrix: Mapping[Hashable, Mapping[Hashable, float]]
+    keys: Sequence[float],
+    customers: Sequence[Dict],
+    capacity: int,
+    matrix: Mapping[Hashable, Mapping[Hashable, float]],
+    depot: Optional[Dict] = None,
 ) -> Tuple[List[List[int]], float]:
     order = [customer["id"] for _, customer in sorted(zip(keys, customers), key=lambda pair: pair[0])]
-    nodes = node_map(customers)
+    nodes = node_map(customers, depot=depot)
     n = len(order)
 
     # V[j] = minimum cost to serve the first j customers in `order` using
@@ -244,9 +331,12 @@ def decode_random_key(
 
 
 def nearest_neighbor(
-    customers: Sequence[Dict], capacity: int, matrix: Mapping[Hashable, Mapping[Hashable, float]]
+    customers: Sequence[Dict],
+    capacity: int,
+    matrix: Mapping[Hashable, Mapping[Hashable, float]],
+    depot: Optional[Dict] = None,
 ) -> Tuple[List[List[int]], float]:
-    nodes = node_map(customers)
+    nodes = node_map(customers, depot=depot)
     unvisited = {customer["id"] for customer in customers}
     routes: List[List[int]] = []
     total = 0.0
@@ -277,7 +367,7 @@ def nearest_neighbor(
 
 def _run_swarm(
     mode: str, customers: Sequence[Dict], capacity: int, matrix: Mapping[Hashable, Mapping[Hashable, float]],
-    iterations: int, particles: int, seed: Optional[int]
+    iterations: int, particles: int, seed: Optional[int], depot: Optional[Dict] = None
 ) -> Dict:
     rng = random.Random(seed)
     n = len(customers)
@@ -287,7 +377,7 @@ def _run_swarm(
     history: List[float] = []
     for iteration in range(iterations):
         for particle in swarm:
-            _, cost = decode_random_key(particle["x"], customers, capacity, matrix)
+            _, cost = decode_random_key(particle["x"], customers, capacity, matrix, depot=depot)
             if cost < particle["pbest_cost"]:
                 particle["pbest_cost"], particle["pbest"] = cost, particle["x"][:]
             if cost < gbest_cost:
@@ -311,11 +401,17 @@ def _run_swarm(
                     velocity = 0.7 * particle["v"][dimension] + 1.5 * r1 * (particle["pbest"][dimension] - particle["x"][dimension]) + 1.5 * r2 * (gbest[dimension] - particle["x"][dimension])
                     particle["v"][dimension] = max(-0.25, min(0.25, velocity))
                     particle["x"][dimension] = min(1.0, max(0.0, particle["x"][dimension] + particle["v"][dimension]))
-    routes, cost = decode_random_key(gbest, customers, capacity, matrix)
+    routes, cost = decode_random_key(gbest, customers, capacity, matrix, depot=depot)
     return {"routes": routes, "cost": cost, "history": history}
 
 
-def exact_small(customers: Sequence[Dict], capacity: int, matrix: Mapping[Hashable, Mapping[Hashable, float]], max_n: int = 8) -> Optional[Dict]:
+def exact_small(
+    customers: Sequence[Dict],
+    capacity: int,
+    matrix: Mapping[Hashable, Mapping[Hashable, float]],
+    max_n: int = 8,
+    depot: Optional[Dict] = None,
+) -> Optional[Dict]:
     """Brute-force visit order, then capacity split. Only for tiny instances."""
     if len(customers) > max_n:
         return None
@@ -327,7 +423,7 @@ def exact_small(customers: Sequence[Dict], capacity: int, matrix: Mapping[Hashab
         keys = [0.0] * len(customers)
         for rank, customer_id in enumerate(permutation):
             keys[id_to_index[customer_id]] = rank / max(1, len(customers))
-        routes, cost = decode_random_key(keys, customers, capacity, matrix)
+        routes, cost = decode_random_key(keys, customers, capacity, matrix, depot=depot)
         if cost < best_cost:
             best_routes, best_cost = routes, cost
     return {"routes": best_routes, "cost": best_cost}
@@ -342,34 +438,41 @@ def solve(
     particles: int = 24,
     seed: Optional[int] = None,
     matrix: Optional[Mapping[Hashable, Mapping[Hashable, float]]] = None,
+    city: Optional[str] = None,
 ) -> Dict:
     if len({customer["id"] for customer in customers}) != len(customers):
         raise ValueError("Customer ids must be unique")
     if any(customer["demand"] > capacity for customer in customers):
         raise ValueError("A customer demand exceeds the vehicle capacity")
-    snap = normalize_congestion(snapshot)
-    # PHASE 1 CHANGE: Matrix is made once and reused by every QPSO/PSO evaluation.
-    # PHASE 2 CHANGE: callers that need several algorithms on the same
-    # customers+snapshot (e.g. /api/benchmark) can precompute this once and
-    # pass it in, instead of every solve() call rebuilding the road graph and
-    # rerunning all-pairs Dijkstra from scratch.
+
+    # Resolve target city, its central depot and hotspots
+    detected_city = city or auto_detect_city(customers)
+    city_data = get_city(detected_city)
+    city_depot = city_data["depot"]
+    city_hotspots = city_data["hotspots"]
+
+    snap = normalize_congestion(snapshot, hotspots=city_hotspots)
     if matrix is None:
-        matrix = build_cost_matrix(customers, snap)
+        matrix = build_cost_matrix(customers, snap, depot=city_depot, hotspots=city_hotspots)
     t0 = time.perf_counter()
     if algorithm == "nearest_neighbor":
-        routes, cost = nearest_neighbor(customers, capacity, matrix)
+        routes, cost = nearest_neighbor(customers, capacity, matrix, depot=city_depot)
         result = {"routes": routes, "cost": cost, "history": [cost]}
     elif algorithm == "pso":
-        result = _run_swarm("pso", customers, capacity, matrix, iterations, particles, seed)
+        result = _run_swarm("pso", customers, capacity, matrix, iterations, particles, seed, depot=city_depot)
     elif algorithm == "exact":
-        exact = exact_small(customers, capacity, matrix)
+        exact = exact_small(customers, capacity, matrix, depot=city_depot)
         if exact is None:
             raise ValueError("Exact solver only supports n <= 8 customers")
         result = {**exact, "history": [exact["cost"]]}
     else:
-        result = _run_swarm("qpso", customers, capacity, matrix, iterations, particles, seed)
+        result = _run_swarm("qpso", customers, capacity, matrix, iterations, particles, seed, depot=city_depot)
     result["runtime_ms"] = round((time.perf_counter() - t0) * 1000, 2)
     result["algorithm"] = algorithm
     result["vehicles"] = len(result["routes"])
-    result["network_model"] = "dynamic weighted road graph with Dijkstra shortest paths"
+    result["city"] = city_data["id"]
+    result["city_name"] = city_data["name"]
+    result["cityName"] = city_data["name"]
+    result["depot"] = city_depot
+    result["network_model"] = f"dynamic weighted road graph with Dijkstra shortest paths ({city_data['name']})"
     return result
