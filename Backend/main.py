@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
-from typing import List, Literal, Optional
+from typing import Any, List, Literal, Optional, Union
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,9 +15,31 @@ from pydantic import BaseModel, Field
 import sys
 
 try:
-    from optimizer import CITIES, DEPOT, HOTSPOTS, build_cost_matrix, congestion_snapshot, generate_customers, get_city, solve
+    from optimizer import (
+        CITIES,
+        DEPOT,
+        HOTSPOTS,
+        build_cost_matrix,
+        compute_routes_cost,
+        congestion_snapshot,
+        generate_customers,
+        get_city,
+        normalize_congestion,
+        solve,
+    )
 except ImportError:
-    from Backend.optimizer import CITIES, DEPOT, HOTSPOTS, build_cost_matrix, congestion_snapshot, generate_customers, get_city, solve
+    from Backend.optimizer import (
+        CITIES,
+        DEPOT,
+        HOTSPOTS,
+        build_cost_matrix,
+        compute_routes_cost,
+        congestion_snapshot,
+        generate_customers,
+        get_city,
+        normalize_congestion,
+        solve,
+    )
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -50,20 +72,32 @@ class OptimizeRequest(BaseModel):
     algorithm: Literal["qpso", "pso", "nearest_neighbor", "exact"] = "qpso"
     iterations: int = Field(default=70, ge=5, le=400)
     particles: int = Field(default=24, ge=4, le=80)
-    seed: Optional[int] = None
+    seed: Optional[int] = Field(default=42)
     congestion: Optional[List[dict]] = None
     city: Optional[str] = "delhi"
 
 
 class BenchmarkRequest(BaseModel):
-    customers: List[Customer] = Field(min_length=1, max_length=50)
+    customers: List[Customer] = Field(min_length=1, max_length=60)
     capacity: int = Field(default=32, ge=1)
     iterations: int = Field(default=70, ge=5, le=400)
     particles: int = Field(default=24, ge=4, le=80)
-    seed: Optional[int] = 42
+    seed: Optional[int] = Field(default=42)
     congestion: Optional[List[dict]] = None
     include_exact: bool = False
     city: Optional[str] = "delhi"
+    qpso_result: Optional[Union[dict, List[List[int]]]] = Field(
+        default=None,
+        description="Already computed QPSO result dict or routes to reuse without recalculation",
+    )
+    existing_qpso: Optional[Union[dict, List[List[int]]]] = Field(
+        default=None,
+        description="Alias for qpso_result",
+    )
+    exclude_qpso: bool = Field(
+        default=False,
+        description="If True and no qpso_result is provided, excludes QPSO recalculation from benchmark",
+    )
 
 
 @app.get("/api/health")
@@ -135,6 +169,7 @@ async def optimize(body: OptimizeRequest):
     customers = [customer.model_dump() for customer in body.customers]
     if not customers:
         raise HTTPException(400, "customers required")
+    effective_seed = 42 if body.seed is None else body.seed
     try:
         result = solve(
             customers,
@@ -143,7 +178,7 @@ async def optimize(body: OptimizeRequest):
             algorithm=body.algorithm,
             iterations=body.iterations,
             particles=body.particles,
-            seed=body.seed,
+            seed=effective_seed,
             city=body.city,
         )
     except ValueError as exc:
@@ -157,23 +192,62 @@ async def benchmark(body: BenchmarkRequest):
     if not customers:
         raise HTTPException(400, "customers required")
     city_data = get_city(body.city)
-    snapshot = body.congestion or congestion_snapshot(city=city_data["id"])
-    matrix = build_cost_matrix(customers, snapshot, depot=city_data["depot"], hotspots=city_data["hotspots"])
+    city_depot = city_data["depot"]
+    city_hotspots = city_data["hotspots"]
+    snapshot = normalize_congestion(body.congestion, hotspots=city_hotspots)
+    matrix = build_cost_matrix(customers, snapshot, depot=city_depot, hotspots=city_hotspots)
+    effective_seed = 42 if body.seed is None else body.seed
     common = dict(
         customers=customers,
         capacity=body.capacity,
         snapshot=snapshot,
         iterations=body.iterations,
         particles=body.particles,
-        seed=body.seed,
+        seed=effective_seed,
         matrix=matrix,
         city=city_data["id"],
     )
-    qpso, pso, nn = (
-        solve(algorithm="qpso", **common),
-        solve(algorithm="pso", **common),
-        solve(algorithm="nearest_neighbor", **common),
+
+    qpso_input = body.qpso_result if body.qpso_result is not None else body.existing_qpso
+    qpso = None
+    if qpso_input is not None:
+        if isinstance(qpso_input, dict):
+            qpso = dict(qpso_input)
+            if "cost" not in qpso and "routes" in qpso:
+                qpso["cost"] = round(compute_routes_cost(qpso["routes"], matrix), 4)
+            if "vehicles" not in qpso and "routes" in qpso:
+                qpso["vehicles"] = len(qpso["routes"])
+            if "history" not in qpso and "cost" in qpso:
+                qpso["history"] = [qpso["cost"]]
+            if "algorithm" not in qpso:
+                qpso["algorithm"] = "qpso"
+        elif isinstance(qpso_input, list):
+            cost = compute_routes_cost(qpso_input, matrix)
+            qpso = {
+                "routes": qpso_input,
+                "cost": round(cost, 4),
+                "history": [round(cost, 4)],
+                "vehicles": len(qpso_input),
+                "algorithm": "qpso",
+            }
+    elif not body.exclude_qpso:
+        qpso = solve(algorithm="qpso", **common)
+
+    pso = solve(algorithm="pso", **common)
+    nn = solve(algorithm="nearest_neighbor", **common)
+
+    qpso_cost = qpso.get("cost") if (qpso and isinstance(qpso, dict)) else None
+    improvement_vs_nn_pct = (
+        round((nn["cost"] - qpso_cost) / nn["cost"] * 100, 2)
+        if (qpso_cost is not None and nn.get("cost"))
+        else None
     )
+    improvement_vs_pso_pct = (
+        round((pso["cost"] - qpso_cost) / pso["cost"] * 100, 2)
+        if (qpso_cost is not None and pso.get("cost"))
+        else None
+    )
+
     payload = {
         "success": True,
         "city": city_data["id"],
@@ -181,8 +255,8 @@ async def benchmark(body: BenchmarkRequest):
         "qpso": qpso,
         "pso": pso,
         "nearest_neighbor": nn,
-        "improvement_vs_nn_pct": round((nn["cost"] - qpso["cost"]) / nn["cost"] * 100, 2) if nn["cost"] else 0,
-        "improvement_vs_pso_pct": round((pso["cost"] - qpso["cost"]) / pso["cost"] * 100, 2) if pso["cost"] else 0,
+        "improvement_vs_nn_pct": improvement_vs_nn_pct if improvement_vs_nn_pct is not None else 0,
+        "improvement_vs_pso_pct": improvement_vs_pso_pct if improvement_vs_pso_pct is not None else 0,
         "congestion": snapshot,
         "note": f"All algorithms use the same simulated traffic snapshot and Dijkstra road-distance matrix for {city_data['name']}.",
     }

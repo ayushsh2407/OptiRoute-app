@@ -365,11 +365,30 @@ def nearest_neighbor(
     return routes, total
 
 
+def compute_routes_cost(
+    routes: Sequence[Sequence[int]],
+    matrix: Mapping[Hashable, Mapping[Hashable, float]],
+) -> float:
+    """Calculate the total Dijkstra road graph cost of a given list of vehicle routes."""
+    total = 0.0
+    for route in routes:
+        if not route:
+            continue
+        first_key = _customer_key(route[0])
+        total += _edge_cost(matrix, DEPOT_KEY, first_key)
+        for i in range(len(route) - 1):
+            total += _edge_cost(matrix, _customer_key(route[i]), _customer_key(route[i + 1]))
+        last_key = _customer_key(route[-1])
+        total += _edge_cost(matrix, last_key, DEPOT_KEY)
+    return total
+
+
 def _run_swarm(
     mode: str, customers: Sequence[Dict], capacity: int, matrix: Mapping[Hashable, Mapping[Hashable, float]],
-    iterations: int, particles: int, seed: Optional[int], depot: Optional[Dict] = None
+    iterations: int, particles: int, seed: Optional[int] = 42, depot: Optional[Dict] = None
 ) -> Dict:
-    rng = random.Random(seed)
+    effective_seed = 42 if seed is None else seed
+    rng = random.Random(effective_seed)
     n = len(customers)
     swarm = [{"x": [rng.random() for _ in range(n)], "v": [(rng.random() - 0.5) * 0.2 for _ in range(n)], "pbest": None, "pbest_cost": math.inf} for _ in range(particles)]
     gbest = None
@@ -436,7 +455,7 @@ def solve(
     algorithm: str = "qpso",
     iterations: int = 70,
     particles: int = 24,
-    seed: Optional[int] = None,
+    seed: Optional[int] = 42,
     matrix: Optional[Mapping[Hashable, Mapping[Hashable, float]]] = None,
     city: Optional[str] = None,
 ) -> Dict:
@@ -455,18 +474,19 @@ def solve(
     if matrix is None:
         matrix = build_cost_matrix(customers, snap, depot=city_depot, hotspots=city_hotspots)
     t0 = time.perf_counter()
+    effective_seed = 42 if seed is None else seed
     if algorithm == "nearest_neighbor":
         routes, cost = nearest_neighbor(customers, capacity, matrix, depot=city_depot)
         result = {"routes": routes, "cost": cost, "history": [cost]}
     elif algorithm == "pso":
-        result = _run_swarm("pso", customers, capacity, matrix, iterations, particles, seed, depot=city_depot)
+        result = _run_swarm("pso", customers, capacity, matrix, iterations, particles, effective_seed, depot=city_depot)
     elif algorithm == "exact":
         exact = exact_small(customers, capacity, matrix, depot=city_depot)
         if exact is None:
             raise ValueError("Exact solver only supports n <= 8 customers")
         result = {**exact, "history": [exact["cost"]]}
     else:
-        result = _run_swarm("qpso", customers, capacity, matrix, iterations, particles, seed, depot=city_depot)
+        result = _run_swarm("qpso", customers, capacity, matrix, iterations, particles, effective_seed, depot=city_depot)
     result["runtime_ms"] = round((time.perf_counter() - t0) * 1000, 2)
     result["algorithm"] = algorithm
     result["vehicles"] = len(result["routes"])
